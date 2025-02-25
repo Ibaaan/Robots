@@ -19,7 +19,7 @@ public class MainApplicationFrame extends JFrame {
     private final JDesktopPane desktopPane = new JDesktopPane();
 
     public MainApplicationFrame() {
-        Locale locale = new Locale("ru", "RUS");
+        Locale locale = Locale.of("ru", "RUS");
         //Make the big window be indented 50 pixels from each edge
         //of the screen.
         int inset = 50;
