@@ -10,16 +10,12 @@ import java.awt.event.WindowEvent;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-/**
- * Что требуется сделать:
- * 1. Метод создания меню перегружен функционалом и трудно читается.
- * Следует разделить его на серию более простых методов (или вообще выделить отдельный класс).
- */
 public class MainApplicationFrame extends JFrame {
     private final JDesktopPane desktopPane = new JDesktopPane();
+    private Locale locale;
 
     public MainApplicationFrame() {
-        Locale locale = Locale.of("ru", "RUS");
+        locale = Locale.of("ru", "RUS");
         //Make the big window be indented 50 pixels from each edge
         //of the screen.
         int inset = 50;
@@ -33,31 +29,36 @@ public class MainApplicationFrame extends JFrame {
         LogWindow logWindow = createLogWindow();
         addWindow(logWindow);
 
-        GameWindow gameWindow = new GameWindow();
-        gameWindow.setSize(400, 400);
-        addWindow(gameWindow);
+
+        addWindow(new GameWindow());
 
         setJMenuBar(generateMenuBar());
 
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                ResourceBundle rb = ResourceBundle.getBundle(
-                        "localization/JOptionPane", locale);
-                Object[] options = {rb.getString("Yes"), rb.getString("No")};
-                int option = JOptionPane.showOptionDialog(
-                        e.getWindow(),
-                        rb.getString("ExitConfirm"),
-                        "Панельная выходка",
-                        JOptionPane.YES_NO_CANCEL_OPTION,
-                        JOptionPane.QUESTION_MESSAGE,
-                        null, options, options[0]);
-                if (option == 0) {
-                    MainApplicationFrame.this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-                }
+                closeMainApplicationFrame(e);
             }
         });
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+    }
+
+    private void closeMainApplicationFrame(WindowEvent e) {
+        ResourceBundle rb = ResourceBundle.getBundle(
+                "localization/JOptionPane", locale);
+        Object[] options = {rb.getString("Yes"), rb.getString("No")};
+        int option = JOptionPane.showOptionDialog(
+                e.getWindow(),
+                rb.getString("ExitConfirm"),
+                "Панельная выходка",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null, options, options[0]);
+        if (option == 0) {
+            dispose();
+            System.exit(0);
+        }
+
     }
 
     protected LogWindow createLogWindow() {
