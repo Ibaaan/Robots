@@ -3,77 +3,143 @@ package gui;
 import log.Logger;
 
 import javax.swing.*;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.beans.PropertyVetoException;
+import java.util.List;
+import java.util.*;
 
-public class MainApplicationFrame extends JFrame {
+public class MainApplicationFrame extends JFrame implements SaveLoadState {
     private final JDesktopPane desktopPane = new JDesktopPane();
-    private Locale locale;
+    private final Locale locale;
+    private final WindowManager windowManager;
+    private final List<JInternalFrame> jInternalFrameList;
 
     public MainApplicationFrame() {
+
+        SaverAndLoader saverAndLoader = new SaverAndLoader();
         locale = Locale.of("ru", "RUS");
-        //Make the big window be indented 50 pixels from each edge
-        //of the screen.
-        int inset = 50;
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        setBounds(inset, inset, screenSize.width - inset * 2,
-                screenSize.height - inset * 2);
+        windowManager = saverAndLoader.iniWindowManager();
+
+        windowManager.setWindowParameters(this);
+
+
 
         setContentPane(desktopPane);
+        jInternalFrameList = getAllJInternalFrames();
+        initAllJInternalFrames();
 
-
-        LogWindow logWindow = createLogWindow();
-        addWindow(logWindow);
-
-
-        addWindow(new GameWindow());
-
-        setJMenuBar(generateMenuBar());
+        setJMenuBar(createMenuBar());
 
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                closeMainApplicationFrame(e);
+                int option = closeMainApplicationFrame(e);
+                if (option == 0) {
+                    setVisible(false);
+                    windowManager.saveParameters((SaveLoadState) e.getWindow());
+                    closeAllJInternalFrames();
+                    saverAndLoader.save(windowManager.getWindowsParameters());
+                    dispose();
+                    System.exit(0);
+                }
             }
         });
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
     }
 
-    private void closeMainApplicationFrame(WindowEvent e) {
+    /**
+     * Инициализирует все JInternalFrame
+     */
+    private void initAllJInternalFrames() {
+        for (JInternalFrame frame : jInternalFrameList) {
+            initJInternalFrame(frame);
+        }
+    }
+
+    /**
+     * Возвращает все JInternalFrame
+     */
+    private List<JInternalFrame> getAllJInternalFrames() {
+        return List.of(
+                new GameWindow(),
+                createLogWindow()
+        );
+    }
+
+    /**
+     * Закрывает все JInternalFrame
+     */
+    private void closeAllJInternalFrames() {
+        for (JInternalFrame frame : jInternalFrameList) {
+            try {
+                frame.setClosed(true);
+            } catch (PropertyVetoException e) {
+                System.out.println(frame.getClass() + " не хочет закрываться" +
+                        "\n" + e);
+            }
+        }
+    }
+
+    /**
+     * Инициализирует JInternalFrame
+     */
+    private void initJInternalFrame(JInternalFrame frame) {
+        addWindow(frame);
+        try {
+            addSavingListener(frame);
+            windowManager.setWindowParameters((SaveLoadState) frame);
+        } catch (ClassCastException e) {
+            System.out.println(
+                    frame.getClass() + " should implement SaveLoadState\n" + e);
+        }
+
+    }
+
+
+    /**
+     * Создает панель подтверждения выхода
+     */
+    private int closeMainApplicationFrame(WindowEvent e) {
         ResourceBundle rb = ResourceBundle.getBundle(
                 "localization/JOptionPane", locale);
         Object[] options = {rb.getString("Yes"), rb.getString("No")};
-        int option = JOptionPane.showOptionDialog(
+        return JOptionPane.showOptionDialog(
                 e.getWindow(),
                 rb.getString("ExitConfirm"),
                 "Панельная выходка",
                 JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null, options, options[0]);
-        if (option == 0) {
-            dispose();
-            System.exit(0);
-        }
+
 
     }
 
     protected LogWindow createLogWindow() {
         LogWindow logWindow = new LogWindow(Logger.getDefaultLogSource());
-        logWindow.setLocation(10, 10);
-        logWindow.setSize(300, 800);
         setMinimumSize(logWindow.getSize());
         logWindow.pack();
         Logger.debug("Протокол работает");
         return logWindow;
     }
 
+
     protected void addWindow(JInternalFrame frame) {
         desktopPane.add(frame);
         frame.setVisible(true);
+    }
+
+    private void addSavingListener(JInternalFrame frame) {
+        frame.addInternalFrameListener(new InternalFrameAdapter() {
+            @Override
+            public void internalFrameClosing(InternalFrameEvent e) {
+                windowManager.saveParameters((SaveLoadState) frame);
+            }
+        });
     }
 
 
@@ -158,7 +224,7 @@ public class MainApplicationFrame extends JFrame {
         return addLogMessageItem;
     }
 
-    private JMenuBar generateMenuBar() {
+    private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(createExitMenu());
         menuBar.add(createLookAndFeelMenu());
@@ -174,5 +240,38 @@ public class MainApplicationFrame extends JFrame {
                  UnsupportedLookAndFeelException e) {
             // just ignore
         }
+    }
+
+
+    @Override
+    public String getFName() {
+        return "main";
+    }
+
+    @Override
+    public void loadState(Map<String, Integer> parametres) {
+
+        try {
+            setSize(parametres.get("width"),
+                    parametres.get("height"));
+            setLocation(parametres.get("x"),
+                    parametres.get("y"));
+        } catch (Exception e) {
+            int inset = 50;
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+            setBounds(inset, inset, screenSize.width - inset * 2,
+                    screenSize.height - inset * 2);
+        }
+
+    }
+
+    @Override
+    public Map<String, Integer> saveState() {
+        HashMap<String, Integer> result = new HashMap<>();
+        result.put("width", getBounds().width);
+        result.put("height", getBounds().height);
+        result.put("x", getBounds().x);
+        result.put("y", getBounds().y);
+        return result;
     }
 }

@@ -1,20 +1,24 @@
 package gui;
 
-import java.awt.BorderLayout;
-import java.awt.EventQueue;
-import java.awt.TextArea;
-
-import javax.swing.JInternalFrame;
-import javax.swing.JPanel;
-
 import log.LogChangeListener;
 import log.LogEntry;
 import log.LogWindowSource;
 
-public class LogWindow extends JInternalFrame implements LogChangeListener
+import javax.swing.*;
+import java.awt.*;
+import java.beans.PropertyVetoException;
+import java.util.HashMap;
+import java.util.Map;
+
+public class LogWindow extends JInternalFrame implements LogChangeListener, SaveLoadState
 {
-    private LogWindowSource m_logSource;
-    private TextArea m_logContent;
+    private static final Integer DEFAULT_WIDTH = 300;
+    private static final Integer DEFAULT_HEIGHT = 800;
+    private static final Integer DEFAULT_X = 10;
+    private static final Integer DEFAULT_Y = 10;
+    private static final Integer DEFAULT_MAXIMUM = 1;
+    private final LogWindowSource m_logSource;
+    private final TextArea m_logContent;
 
     public LogWindow(LogWindowSource logSource) 
     {
@@ -22,8 +26,7 @@ public class LogWindow extends JInternalFrame implements LogChangeListener
         m_logSource = logSource;
         m_logSource.registerListener(this);
         m_logContent = new TextArea("");
-        m_logContent.setSize(200, 500);
-        
+
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(m_logContent, BorderLayout.CENTER);
         getContentPane().add(panel);
@@ -47,4 +50,42 @@ public class LogWindow extends JInternalFrame implements LogChangeListener
     {
         EventQueue.invokeLater(this::updateLogContent);
     }
+
+
+    @Override
+    public String getFName() {
+        return "log";
+    }
+
+    @Override
+    public void loadState(Map<String, Integer> parametres) {
+        if (parametres == null) {
+            setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+            setLocation(DEFAULT_X, DEFAULT_Y);
+        } else {
+            setSize(parametres.getOrDefault("width", DEFAULT_WIDTH),
+                    parametres.getOrDefault("height", DEFAULT_HEIGHT));
+            setLocation(parametres.getOrDefault("x", DEFAULT_X),
+                    parametres.getOrDefault("y", DEFAULT_Y));
+
+            try {
+                setIcon(parametres.getOrDefault("maximum", DEFAULT_MAXIMUM) == 0);
+            } catch (PropertyVetoException e) {
+                System.out.println("Can't change size of window\n" + e);
+            }
+        }
+    }
+
+    @Override
+    public Map<String, Integer> saveState() {
+        HashMap<String, Integer> result = new HashMap<>();
+        result.put("width", getWidth());
+        result.put("height", getHeight());
+        result.put("x", getX());
+        result.put("y", getY());
+        result.put("maximum", isIcon() ? 0 : 1);
+        return result;
+    }
+
+
 }
