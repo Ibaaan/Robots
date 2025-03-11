@@ -117,28 +117,20 @@ public class GameVisualizer extends JPanel {
                 m_robotPositionY - radiusTrajCircle *
                         Math.cos(m_robotDirection) - m_targetPositionY;
 
-        if (
-                diffXFromTargetTo1Center * diffXFromTargetTo1Center +
-                        diffYFromTargetTo1Center * diffYFromTargetTo1Center <
-                        radiusTrajCircle * radiusTrajCircle
-                        |
-                        diffXFromTargetTo2Center * diffXFromTargetTo2Center +
-                                diffYFromTargetTo2Center * diffYFromTargetTo2Center <
-                                radiusTrajCircle * radiusTrajCircle
-        ) {
-            return true;
-        }
-        return false;
+        return diffXFromTargetTo1Center * diffXFromTargetTo1Center +
+                diffYFromTargetTo1Center * diffYFromTargetTo1Center <
+                radiusTrajCircle * radiusTrajCircle
+                |
+                diffXFromTargetTo2Center * diffXFromTargetTo2Center +
+                        diffYFromTargetTo2Center * diffYFromTargetTo2Center <
+                        radiusTrajCircle * radiusTrajCircle;
     }
 
     private static double applyLimits(double value, double min, double max) {
         if (value < min) {
             return min;
         }
-        if (value > max) {
-            return max;
-        }
-        return value;
+        return Math.min(value, max);
     }
 
     private void moveRobot(double velocity, double angularVelocity, double duration) {
