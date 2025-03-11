@@ -89,7 +89,46 @@ public class GameVisualizer extends JPanel {
             angularVelocity = -maxAngularVelocity;
         }
 
+        if (oppositeIfBug(velocity, angularVelocity)) {
+            angularVelocity *= -1;
+        }
+
         moveRobot(velocity, angularVelocity, 10);
+    }
+
+    /**
+     * Возвращает значение true, если целевая точка
+     * находится d одном из кругов траектории,
+     * в противном случае значение false
+     */
+    private boolean oppositeIfBug(double velocity, double angularVelocity) {
+        double radiusTrajCircle = (velocity / angularVelocity);
+
+        double diffXFromTargetTo1Center =
+                m_robotPositionX - radiusTrajCircle *
+                        Math.sin(m_robotDirection) - m_targetPositionX;
+        double diffXFromTargetTo2Center =
+                m_robotPositionX + radiusTrajCircle *
+                        Math.sin(m_robotDirection) - m_targetPositionX;
+        double diffYFromTargetTo1Center =
+                m_robotPositionY + radiusTrajCircle *
+                        Math.cos(m_robotDirection) - m_targetPositionY;
+        double diffYFromTargetTo2Center =
+                m_robotPositionY - radiusTrajCircle *
+                        Math.cos(m_robotDirection) - m_targetPositionY;
+
+        if (
+                diffXFromTargetTo1Center * diffXFromTargetTo1Center +
+                        diffYFromTargetTo1Center * diffYFromTargetTo1Center <
+                        radiusTrajCircle * radiusTrajCircle
+                        |
+                        diffXFromTargetTo2Center * diffXFromTargetTo2Center +
+                                diffYFromTargetTo2Center * diffYFromTargetTo2Center <
+                                radiusTrajCircle * radiusTrajCircle
+        ) {
+            return true;
+        }
+        return false;
     }
 
     private static double applyLimits(double value, double min, double max) {
