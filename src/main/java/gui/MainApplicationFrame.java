@@ -21,8 +21,10 @@ public class MainApplicationFrame extends JFrame {
         //of the screen.
         int inset =
                 50;
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        setBounds(inset, inset, screenSize.width - inset * 2,
+        Dimension screenSize =
+                Toolkit.getDefaultToolkit().getScreenSize();
+        setBounds(inset,
+                inset, screenSize.width - inset * 2,
                 screenSize.height - inset * 2);
 
         setContentPane(desktopPane);
