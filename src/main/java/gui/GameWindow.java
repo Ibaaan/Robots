@@ -22,7 +22,7 @@ public class GameWindow extends JInternalFrame implements SaveLoadState {
         getContentPane().add(panel);
         pack();
 
-
+        setDefaultCloseOperation(HIDE_ON_CLOSE);
     }
 
     @Override

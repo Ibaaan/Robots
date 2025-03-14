@@ -1,15 +1,14 @@
 package gui;
 
 import log.Logger;
+import org.reflections.Reflections;
 
 import javax.swing.*;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.beans.PropertyVetoException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.*;
 
@@ -17,33 +16,29 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
     private final JDesktopPane desktopPane = new JDesktopPane();
     private final Locale locale;
     private final WindowManager windowManager;
-    private final List<JInternalFrame> jInternalFrameList;
+    private final SaverAndLoader saverAndLoader;
 
     public MainApplicationFrame() {
 
-        SaverAndLoader saverAndLoader = new SaverAndLoader();
+        saverAndLoader = new SaverAndLoader();
         locale = Locale.of("ru", "RUS");
         windowManager = saverAndLoader.iniWindowManager();
-
-        windowManager.setWindowParameters(this);
-
-
+        List<SaveLoadState> windows = initWindows();
+        setParameters(windows);
 
         setContentPane(desktopPane);
-        jInternalFrameList = getAllJInternalFrames();
-        initAllJInternalFrames();
+
+        addJInternalFramesToMainFrame(filterJInternalFramesFromFrames(windows));
 
         setJMenuBar(createMenuBar());
 
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                int option = closeMainApplicationFrame(e);
+                int option = addPaneWhenCloseMainFrame(e);
                 if (option == 0) {
                     setVisible(false);
-                    windowManager.saveParameters((SaveLoadState) e.getWindow());
-                    closeAllJInternalFrames();
-                    saverAndLoader.save(windowManager.getWindowsParameters());
+                    saveWindowParams(windows);
                     dispose();
                     System.exit(0);
                 }
@@ -53,58 +48,80 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
     }
 
     /**
-     * Инициализирует все JInternalFrame
+     * Устанавливает параметры окнам реализующим SaveLoadState
      */
-    private void initAllJInternalFrames() {
-        for (JInternalFrame frame : jInternalFrameList) {
-            initJInternalFrame(frame);
+    private void setParameters(List<SaveLoadState> windows) {
+        for (SaveLoadState window : windows) {
+            windowManager.setWindowParameters(window);
         }
     }
 
     /**
-     * Возвращает все JInternalFrame
+     * Сохраняет все окна реализующие SaveLoadState
      */
-    private List<JInternalFrame> getAllJInternalFrames() {
-        return List.of(
-                new GameWindow(),
-                createLogWindow()
-        );
+    private void saveWindowParams(List<SaveLoadState> windows) {
+        for (SaveLoadState window : windows) {
+            windowManager.saveParameters(window);
+        }
+        saverAndLoader.save(windowManager.getWindowsParameters());
     }
 
     /**
-     * Закрывает все JInternalFrame
+     * Возвращает все JInternalFrame из списка всех окон
      */
-    private void closeAllJInternalFrames() {
-        for (JInternalFrame frame : jInternalFrameList) {
-            try {
-                frame.setClosed(true);
-            } catch (PropertyVetoException e) {
-                System.out.println(frame.getClass() + " не хочет закрываться" +
-                        "\n" + e);
+    private List<JInternalFrame> filterJInternalFramesFromFrames(List<SaveLoadState> frames) {
+        List<JInternalFrame> result = new ArrayList<>();
+        for (SaveLoadState obj : frames) {
+            if (obj instanceof JInternalFrame) {
+                result.add((JInternalFrame) obj);
             }
         }
+        return result;
     }
 
     /**
-     * Инициализирует JInternalFrame
+     * Добавляет JInternalFrame окна к MainFrame
      */
-    private void initJInternalFrame(JInternalFrame frame) {
-        addWindow(frame);
-        try {
-            addSavingListener(frame);
-            windowManager.setWindowParameters((SaveLoadState) frame);
-        } catch (ClassCastException e) {
-            System.out.println(
-                    frame.getClass() + " should implement SaveLoadState\n" + e);
+    private void addJInternalFramesToMainFrame(List<JInternalFrame> jInternalFrameList) {
+        for (JInternalFrame frame : jInternalFrameList) {
+            addWindow(frame);
         }
-
     }
 
+    /**
+     * Инициализируйте все окна, которые реализуют интерфейс SaveLoadState
+     */
+    private List<SaveLoadState> initWindows() {
+        List<SaveLoadState> result = new ArrayList<>();
+        Reflections reflections = new Reflections("gui");
+        Set<Class<? extends SaveLoadState>> classes =
+                reflections.getSubTypesOf(SaveLoadState.class);
+
+        System.out.println(Arrays.toString(classes.toArray()));
+
+        for (Class<? extends SaveLoadState> clazz : classes) {
+            try {
+                if (clazz != this.getClass()) {
+                    SaveLoadState saveLoadStateImpl =
+                            clazz.getDeclaredConstructor().newInstance();
+                    result.add(saveLoadStateImpl);
+                } else {
+                    result.add(this);
+                }
+            } catch (InstantiationException |
+                     InvocationTargetException |
+                     IllegalAccessException |
+                     NoSuchMethodException e) {
+                e.printStackTrace();
+            }
+        }
+        return result;
+    }
 
     /**
      * Создает панель подтверждения выхода
      */
-    private int closeMainApplicationFrame(WindowEvent e) {
+    private int addPaneWhenCloseMainFrame(WindowEvent e) {
         ResourceBundle rb = ResourceBundle.getBundle(
                 "localization/JOptionPane", locale);
         Object[] options = {rb.getString("Yes"), rb.getString("No")};
@@ -115,16 +132,6 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
                 JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null, options, options[0]);
-
-
-    }
-
-    protected LogWindow createLogWindow() {
-        LogWindow logWindow = new LogWindow(Logger.getDefaultLogSource());
-        setMinimumSize(logWindow.getSize());
-        logWindow.pack();
-        Logger.debug("Протокол работает");
-        return logWindow;
     }
 
 
@@ -132,16 +139,6 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
         desktopPane.add(frame);
         frame.setVisible(true);
     }
-
-    private void addSavingListener(JInternalFrame frame) {
-        frame.addInternalFrameListener(new InternalFrameAdapter() {
-            @Override
-            public void internalFrameClosing(InternalFrameEvent e) {
-                windowManager.saveParameters((SaveLoadState) frame);
-            }
-        });
-    }
-
 
     /**
      * Создаёт меню - 'Режим отображения'

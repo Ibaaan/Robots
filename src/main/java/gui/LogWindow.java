@@ -3,6 +3,7 @@ package gui;
 import log.LogChangeListener;
 import log.LogEntry;
 import log.LogWindowSource;
+import log.Logger;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,10 +21,10 @@ public class LogWindow extends JInternalFrame implements LogChangeListener, Save
     private final LogWindowSource m_logSource;
     private final TextArea m_logContent;
 
-    public LogWindow(LogWindowSource logSource) 
+    public LogWindow()
     {
         super("Протокол работы", true, true, true, true);
-        m_logSource = logSource;
+        m_logSource = Logger.getDefaultLogSource();
         m_logSource.registerListener(this);
         m_logContent = new TextArea("");
 
@@ -32,6 +33,8 @@ public class LogWindow extends JInternalFrame implements LogChangeListener, Save
         getContentPane().add(panel);
         pack();
         updateLogContent();
+        Logger.debug("Протокол работает");
+        setDefaultCloseOperation(HIDE_ON_CLOSE);
     }
 
     private void updateLogContent()
