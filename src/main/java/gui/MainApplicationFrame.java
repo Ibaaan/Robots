@@ -20,11 +20,13 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
 
     public MainApplicationFrame() {
 
+
         saverAndLoader = new SaverAndLoader();
         locale = Locale.of("ru", "RUS");
         windowManager = saverAndLoader.iniWindowManager();
         List<SaveLoadState> windows = initWindows();
         setParameters(windows);
+
 
         setContentPane(desktopPane);
 
