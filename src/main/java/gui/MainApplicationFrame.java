@@ -1,83 +1,146 @@
 package gui;
 
 import log.Logger;
+import org.reflections.Reflections;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.*;
 
-public class MainApplicationFrame extends JFrame {
+public class MainApplicationFrame extends JFrame implements SaveLoadState {
     private final JDesktopPane desktopPane = new JDesktopPane();
-    private Locale locale;
+    private final Locale locale;
+    private final WindowManager windowManager;
+    private final SaverAndLoader saverAndLoader;
 
     public MainApplicationFrame() {
-        locale = Locale.of("ru",
-                "RUS");
-        //Make the big window be indented 50 pixels from each edge
-        //of the screen.
-        int inset =
-                50;
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        setBounds(inset, inset, screenSize.width - inset * 2,
-                screenSize.height - inset * 2);
+
+
+        saverAndLoader = new SaverAndLoader();
+        locale = Locale.of("ru", "RUS");
+        windowManager = saverAndLoader.iniWindowManager();
+        List<SaveLoadState> windows = initWindows();
+        setParameters(windows);
+
 
         setContentPane(desktopPane);
 
+        addJInternalFramesToMainFrame(filterJInternalFramesFromFrames(windows));
 
-        LogWindow logWindow = createLogWindow();
-        addWindow(logWindow);
-
-
-        addWindow(new GameWindow());
-
-        setJMenuBar(generateMenuBar());
+        setJMenuBar(createMenuBar());
 
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                closeMainApplicationFrame(e);
+                int option = addPaneWhenCloseMainFrame(e);
+                if (option == 0) {
+                    setVisible(false);
+                    saveWindowParams(windows);
+                    dispose();
+                    System.exit(0);
+                }
             }
         });
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
     }
 
-    private void closeMainApplicationFrame(WindowEvent e) {
+    /**
+     * Устанавливает параметры окнам реализующим SaveLoadState
+     */
+    private void setParameters(List<SaveLoadState> windows) {
+        for (SaveLoadState window : windows) {
+            windowManager.setWindowParameters(window);
+        }
+    }
+
+    /**
+     * Сохраняет все окна реализующие SaveLoadState
+     */
+    private void saveWindowParams(List<SaveLoadState> windows) {
+        for (SaveLoadState window : windows) {
+            windowManager.saveParameters(window);
+        }
+        saverAndLoader.save(windowManager.getWindowsParameters());
+    }
+
+    /**
+     * Возвращает все JInternalFrame из списка всех окон
+     */
+    private List<JInternalFrame> filterJInternalFramesFromFrames(List<SaveLoadState> frames) {
+        List<JInternalFrame> result = new ArrayList<>();
+        for (SaveLoadState obj : frames) {
+            if (obj instanceof JInternalFrame) {
+                result.add((JInternalFrame) obj);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Добавляет JInternalFrame окна к MainFrame
+     */
+    private void addJInternalFramesToMainFrame(List<JInternalFrame> jInternalFrameList) {
+        for (JInternalFrame frame : jInternalFrameList) {
+            addWindow(frame);
+        }
+    }
+
+    /**
+     * Инициализируйте все окна, которые реализуют интерфейс SaveLoadState
+     */
+    private List<SaveLoadState> initWindows() {
+        List<SaveLoadState> result = new ArrayList<>();
+        Reflections reflections = new Reflections("gui");
+        Set<Class<? extends SaveLoadState>> classes =
+                reflections.getSubTypesOf(SaveLoadState.class);
+
+        System.out.println(Arrays.toString(classes.toArray()));
+
+        for (Class<? extends SaveLoadState> clazz : classes) {
+            try {
+                if (clazz != this.getClass()) {
+                    SaveLoadState saveLoadStateImpl =
+                            clazz.getDeclaredConstructor().newInstance();
+                    result.add(saveLoadStateImpl);
+                } else {
+                    result.add(this);
+                }
+            } catch (InstantiationException |
+                     InvocationTargetException |
+                     IllegalAccessException |
+                     NoSuchMethodException e) {
+                e.printStackTrace();
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Создает панель подтверждения выхода
+     */
+    private int addPaneWhenCloseMainFrame(WindowEvent e) {
         ResourceBundle rb = ResourceBundle.getBundle(
                 "localization/JOptionPane", locale);
         Object[] options = {rb.getString("Yes"), rb.getString("No")};
-        int option = JOptionPane.showOptionDialog(
+        return JOptionPane.showOptionDialog(
                 e.getWindow(),
                 rb.getString("ExitConfirm"),
                 "Панельная выходка",
                 JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null, options, options[0]);
-        if (option == 0) {
-            dispose();
-            System.exit(0);
-        }
-
     }
 
-    protected LogWindow createLogWindow() {
-        LogWindow logWindow = new LogWindow(Logger.getDefaultLogSource());
-        logWindow.setLocation(10, 10);
-        logWindow.setSize(300, 800);
-        setMinimumSize(logWindow.getSize());
-        logWindow.pack();
-        Logger.debug("Протокол работает");
-        return logWindow;
-    }
 
     protected void addWindow(JInternalFrame frame) {
         desktopPane.add(frame);
         frame.setVisible(true);
     }
-
 
     /**
      * Создаёт меню - 'Режим отображения'
@@ -160,7 +223,7 @@ public class MainApplicationFrame extends JFrame {
         return addLogMessageItem;
     }
 
-    private JMenuBar generateMenuBar() {
+    private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(createExitMenu());
         menuBar.add(createLookAndFeelMenu());
@@ -176,5 +239,38 @@ public class MainApplicationFrame extends JFrame {
                  UnsupportedLookAndFeelException e) {
             // just ignore
         }
+    }
+
+
+    @Override
+    public String getFName() {
+        return "main";
+    }
+
+    @Override
+    public void loadState(Map<String, Integer> parametres) {
+
+        try {
+            setSize(parametres.get("width"),
+                    parametres.get("height"));
+            setLocation(parametres.get("x"),
+                    parametres.get("y"));
+        } catch (Exception e) {
+            int inset = 50;
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+            setBounds(inset, inset, screenSize.width - inset * 2,
+                    screenSize.height - inset * 2);
+        }
+
+    }
+
+    @Override
+    public Map<String, Integer> saveState() {
+        HashMap<String, Integer> result = new HashMap<>();
+        result.put("width", getBounds().width);
+        result.put("height", getBounds().height);
+        result.put("x", getBounds().x);
+        result.put("y", getBounds().y);
+        return result;
     }
 }
