@@ -1,4 +1,4 @@
-package gui;
+package state;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,7 +12,9 @@ import java.util.*;
 public class SaverAndLoader {
     private Properties prop = null;
     private final String filePath =
-            System.getProperty("user.home") + File.separator + "state.config";
+            System.getProperty("user.home") +
+                    File.separator + "Kushtanov" +
+                    File.separator + "state.config";
     private final File file = new File(filePath);
 
     /**
@@ -24,7 +26,8 @@ public class SaverAndLoader {
             try (FileInputStream fis = new FileInputStream(file)) {
                 prop.load(fis);
             } catch (IOException ex) {
-                System.out.println(ex);
+                System.out.println("Не удалось получить доступ к файлу с конфигом\n" +
+                        ex);
             }
         }
     }
@@ -32,7 +35,7 @@ public class SaverAndLoader {
     /**
      * Инициализирует WindowManager
      */
-    public WindowManager iniWindowManager() {
+    public WindowManager initWindowManager() {
         return new WindowManager(
                 getWindowNames(),
                 getAllParameters());
@@ -42,7 +45,7 @@ public class SaverAndLoader {
      * Возвращает Map со всеми параметрами окна, хранящихся в файле
      */
     private Map<String, Integer> getAllParameters() {
-        HashMap<String, Integer> result = new HashMap<>();
+        Map<String, Integer> result = new HashMap<>();
         if (prop == null) {
             return result;
         }
@@ -52,8 +55,9 @@ public class SaverAndLoader {
                         (String) key,
                         Integer.parseInt((String) prop.get(key))
                 );
-            } catch (Exception e) {
-                System.out.println("Wrong format of contained data\n" + e);
+            } catch (NumberFormatException e) {
+                System.out.println("Значение по ключу " + key.toString() +
+                        " не является числом\n" + e);
             }
         }
         return result;
@@ -69,11 +73,7 @@ public class SaverAndLoader {
         }
 
         for (Object key : prop.keySet()) {
-            try {
-                result.add(((String) key).split("\\.")[0]);
-            } catch (Exception e) {
-                System.out.println("Wrong format of contained data\n" + e);
-            }
+            result.add(((String) key).split("\\.")[0]);
         }
         return result;
     }
@@ -85,7 +85,7 @@ public class SaverAndLoader {
         try {
             file.createNewFile();
         } catch (IOException e) {
-            System.out.println(e);
+            System.out.println("Файл с конфигом не создался\n" + e);
         }
         System.out.println(params);
         Properties savedProps = new Properties();
@@ -95,10 +95,10 @@ public class SaverAndLoader {
 
         try (FileWriter fileWriter = new FileWriter(filePath)) {
 
-            savedProps.store(fileWriter, "INFORMATION!!!");
+            savedProps.store(fileWriter, "");
 
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("Не удалось записать параметры в файл\n" + e);
         }
     }
 }

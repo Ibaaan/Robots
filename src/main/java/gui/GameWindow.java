@@ -1,5 +1,7 @@
 package gui;
 
+import state.SaveLoadState;
+
 import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyVetoException;

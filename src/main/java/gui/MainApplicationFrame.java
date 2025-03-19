@@ -2,6 +2,9 @@ package gui;
 
 import log.Logger;
 import org.reflections.Reflections;
+import state.SaveLoadState;
+import state.SaverAndLoader;
+import state.WindowManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,6 +14,8 @@ import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.*;
+
+import static javax.swing.JOptionPane.YES_OPTION;
 
 public class MainApplicationFrame extends JFrame implements SaveLoadState {
     private final JDesktopPane desktopPane = new JDesktopPane();
@@ -23,7 +28,7 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
 
         saverAndLoader = new SaverAndLoader();
         locale = Locale.of("ru", "RUS");
-        windowManager = saverAndLoader.iniWindowManager();
+        windowManager = saverAndLoader.initWindowManager();
         List<SaveLoadState> windows = initWindows();
         setParameters(windows);
 
@@ -38,7 +43,7 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
             @Override
             public void windowClosing(WindowEvent e) {
                 int option = addPaneWhenCloseMainFrame(e);
-                if (option == 0) {
+                if (option == YES_OPTION) {
                     setVisible(false);
                     saveWindowParams(windows);
                     dispose();
@@ -99,7 +104,8 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
         Set<Class<? extends SaveLoadState>> classes =
                 reflections.getSubTypesOf(SaveLoadState.class);
 
-        System.out.println(Arrays.toString(classes.toArray()));
+        System.out.println("initWindows: founded classes = " +
+                Arrays.toString(classes.toArray()));
 
         for (Class<? extends SaveLoadState> clazz : classes) {
             try {
@@ -114,7 +120,8 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
                      InvocationTargetException |
                      IllegalAccessException |
                      NoSuchMethodException e) {
-                e.printStackTrace();
+                System.out.println("Не удалось создать экземпляр класса " +
+                        clazz + "\n" + e);
             }
         }
         return result;

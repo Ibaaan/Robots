@@ -4,6 +4,7 @@ import log.LogChangeListener;
 import log.LogEntry;
 import log.LogWindowSource;
 import log.Logger;
+import state.SaveLoadState;
 
 import javax.swing.*;
 import java.awt.*;
