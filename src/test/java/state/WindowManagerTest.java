@@ -1,8 +1,8 @@
-package gui;
+package state;
 
+import gui.GameWindow;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import state.WindowManager;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 class WindowManagerTest {
-    WindowManager windowManager;
+    private final WindowManager windowManager;
 
     public WindowManagerTest() {
         Map<String, Integer> test = new HashMap<>();
@@ -22,16 +22,16 @@ class WindowManagerTest {
     }
 
     @Test
-    void setWindowParameters() {
+    void recoverWindow() {
         GameWindow gameWindow = new GameWindow();
 
-        windowManager.setWindowParameters(gameWindow);
+        windowManager.recoverWindow(gameWindow);
         Assertions.assertEquals(gameWindow.getHeight(), 100);
         Assertions.assertEquals(gameWindow.getWidth(), 100);
 
         WindowManager newWindowManager = new WindowManager(
                 new HashSet<>(), new HashMap<>());
-        newWindowManager.setWindowParameters(gameWindow);
+        newWindowManager.recoverWindow(gameWindow);
         Assertions.assertEquals(gameWindow.getHeight(), 400);
         Assertions.assertEquals(gameWindow.getWidth(), 400);
 

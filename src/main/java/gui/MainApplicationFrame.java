@@ -30,7 +30,7 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
         locale = Locale.of("ru", "RUS");
         windowManager = saverAndLoader.initWindowManager();
         List<SaveLoadState> windows = initWindows();
-        setParameters(windows);
+        recoverWindows(windows);
 
 
         setContentPane(desktopPane);
@@ -55,16 +55,17 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
     }
 
     /**
-     * Устанавливает параметры окнам реализующим SaveLoadState
+     * Восстановление окон, прикрепленных к главному окну,
+     * из состояния перед закрытием программы
      */
-    private void setParameters(List<SaveLoadState> windows) {
+    private void recoverWindows(List<SaveLoadState> windows) {
         for (SaveLoadState window : windows) {
-            windowManager.setWindowParameters(window);
+            windowManager.recoverWindow(window);
         }
     }
 
     /**
-     * Сохраняет все окна реализующие SaveLoadState
+     * Сохранить параметры окон перед закрытием всего приложения
      */
     private void saveWindowParams(List<SaveLoadState> windows) {
         for (SaveLoadState window : windows) {

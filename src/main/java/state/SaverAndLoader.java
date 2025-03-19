@@ -10,7 +10,7 @@ import java.util.*;
  * Читает данные из state.cfg и сохраняет данные в state.cfg
  */
 public class SaverAndLoader {
-    private Properties prop = null;
+    private Properties properties = new Properties();
     private final String filePath =
             System.getProperty("user.home") +
                     File.separator + "Kushtanov" +
@@ -22,9 +22,9 @@ public class SaverAndLoader {
      */
     public SaverAndLoader() {
         if (file.exists() & file.canRead()) {
-            prop = new Properties();
+            properties = new Properties();
             try (FileInputStream fis = new FileInputStream(file)) {
-                prop.load(fis);
+                properties.load(fis);
             } catch (IOException ex) {
                 System.out.println("Не удалось получить доступ к файлу с конфигом\n" +
                         ex);
@@ -46,14 +46,12 @@ public class SaverAndLoader {
      */
     private Map<String, Integer> getAllParameters() {
         Map<String, Integer> result = new HashMap<>();
-        if (prop == null) {
-            return result;
-        }
-        for (Object key : prop.keySet()) {
+
+        for (Object key : properties.keySet()) {
             try {
                 result.put(
                         (String) key,
-                        Integer.parseInt((String) prop.get(key))
+                        Integer.parseInt((String) properties.get(key))
                 );
             } catch (NumberFormatException e) {
                 System.out.println("Значение по ключу " + key.toString() +
@@ -68,11 +66,11 @@ public class SaverAndLoader {
      */
     private Set<String> getWindowNames() {
         HashSet<String> result = new HashSet<>();
-        if (prop == null) {
+        if (properties == null) {
             return result;
         }
 
-        for (Object key : prop.keySet()) {
+        for (Object key : properties.keySet()) {
             result.add(((String) key).split("\\.")[0]);
         }
         return result;
@@ -82,12 +80,19 @@ public class SaverAndLoader {
      * Сохраняет параметры из Map в state.cfg в домашнем каталоге пользователя
      */
     public void save(Map<String, Integer> params) {
+        File folder = new File(System.getProperty("user.home") +
+                File.separator + "Kushtanov");
+
+        if (!folder.exists()) {
+            folder.mkdir();
+        }
+
         try {
             file.createNewFile();
         } catch (IOException e) {
             System.out.println("Файл с конфигом не создался\n" + e);
         }
-        System.out.println(params);
+        System.out.println("Параметры успешно сохранены");
         Properties savedProps = new Properties();
         for (Map.Entry<String, Integer> entry : params.entrySet()) {
             savedProps.setProperty(entry.getKey(), entry.getValue().toString());

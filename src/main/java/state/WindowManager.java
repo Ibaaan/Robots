@@ -31,7 +31,7 @@ public class WindowManager {
     /**
      * Устанавливает параметры окна
      */
-    public void setWindowParameters(SaveLoadState frame) {
+    public void recoverWindow(SaveLoadState frame) {
         frame.loadState(getParameters(frame.getFName()));
     }
 
