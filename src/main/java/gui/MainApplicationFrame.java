@@ -1,17 +1,19 @@
 package gui;
 
 import log.Logger;
-import org.reflections.Reflections;
 import state.SaveLoadState;
 import state.SaverAndLoader;
 import state.WindowManager;
+import windowfilter.FilterJInternalFrame;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.List;
 import java.util.*;
 
@@ -29,13 +31,11 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
         saverAndLoader = new SaverAndLoader();
         locale = Locale.of("ru", "RUS");
         windowManager = saverAndLoader.initWindowManager();
-        List<SaveLoadState> windows = initWindows();
+        List<SaveLoadState> windows = findAndCreateWindows();
         recoverWindows(windows);
-
+        addWindows(windows);
 
         setContentPane(desktopPane);
-
-        addJInternalFramesToMainFrame(filterJInternalFramesFromFrames(windows));
 
         setJMenuBar(createMenuBar());
 
@@ -65,7 +65,7 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
     }
 
     /**
-     * Сохранить параметры окон перед закрытием всего приложения
+     * Сохранить параметры окон в конфиг перед закрытием всего приложения
      */
     private void saveWindowParams(List<SaveLoadState> windows) {
         for (SaveLoadState window : windows) {
@@ -75,57 +75,59 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
     }
 
     /**
-     * Возвращает все JInternalFrame из списка всех окон
+     * Добавляет все окна к главному окну
      */
-    private List<JInternalFrame> filterJInternalFramesFromFrames(List<SaveLoadState> frames) {
-        List<JInternalFrame> result = new ArrayList<>();
-        for (SaveLoadState obj : frames) {
-            if (obj instanceof JInternalFrame) {
-                result.add((JInternalFrame) obj);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Добавляет JInternalFrame окна к MainFrame
-     */
-    private void addJInternalFramesToMainFrame(List<JInternalFrame> jInternalFrameList) {
-        for (JInternalFrame frame : jInternalFrameList) {
-            addWindow(frame);
+    private void addWindows(List<SaveLoadState> windows) {
+        for (SaveLoadState window : new FilterJInternalFrame().filter(windows)) {
+            addWindow((JInternalFrame) window);
         }
     }
 
     /**
-     * Инициализируйте все окна, которые реализуют интерфейс SaveLoadState
+     * Поиск и создание окон, которые реализуют интерфейс SaveLoadState
      */
-    private List<SaveLoadState> initWindows() {
-        List<SaveLoadState> result = new ArrayList<>();
-        Reflections reflections = new Reflections("gui");
-        Set<Class<? extends SaveLoadState>> classes =
-                reflections.getSubTypesOf(SaveLoadState.class);
+    private List<SaveLoadState> findAndCreateWindows() {
+        List<SaveLoadState> classes = new ArrayList<>();
+        String path = "gui";
 
-        System.out.println("initWindows: founded classes = " +
-                Arrays.toString(classes.toArray()));
 
-        for (Class<? extends SaveLoadState> clazz : classes) {
-            try {
-                if (clazz != this.getClass()) {
-                    SaveLoadState saveLoadStateImpl =
-                            clazz.getDeclaredConstructor().newInstance();
-                    result.add(saveLoadStateImpl);
-                } else {
-                    result.add(this);
+        URL resource = ClassLoader.getSystemClassLoader().getResource(path);
+        if (resource == null) {
+            System.out.println("findClassesInPackage:Resources == null");
+            return classes;
+        }
+        File directory = new File(resource.getFile());
+        if (!directory.exists()) {
+            System.out.println("findClassesInPackage:directory == null");
+            return classes;
+        }
+        File[] files = directory.listFiles((dir, name) -> name.endsWith(".class"));
+        if (files == null) {
+            System.out.println("findClassesInPackage:files == null");
+            return classes;
+        }
+        try {
+            for (File file : files) {
+                String className = file.getName().substring(0, file.getName().length() - 6);
+                Class<?> clazz = Class.forName("gui" + '.' + className);
+                if (SaveLoadState.class.isAssignableFrom(clazz) &
+                        !MainApplicationFrame.class.isAssignableFrom(clazz)) {
+                    SaveLoadState newWindow = (SaveLoadState) clazz
+                            .getDeclaredConstructor()
+                            .newInstance();
+                    classes.add(newWindow);
                 }
-            } catch (InstantiationException |
-                     InvocationTargetException |
-                     IllegalAccessException |
-                     NoSuchMethodException e) {
-                System.out.println("Не удалось создать экземпляр класса " +
-                        clazz + "\n" + e);
             }
+        } catch (ClassNotFoundException e) {
+            System.out.println("Класс не может быть найден\n" + e);
+        } catch (InvocationTargetException
+                 | InstantiationException
+                 | IllegalAccessException
+                 | NoSuchMethodException e) {
+            System.out.println("Класс не может быть инициализирован\n" + e);
         }
-        return result;
+
+        return classes;
     }
 
     /**
@@ -145,7 +147,7 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
     }
 
 
-    protected void addWindow(JInternalFrame frame) {
+    protected void addWindow(Component frame) {
         desktopPane.add(frame);
         frame.setVisible(true);
     }
