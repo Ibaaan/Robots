@@ -29,14 +29,14 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
 
 
         saverAndLoader = new SaverAndLoader();
+
         locale = Locale.of("ru", "RUS");
-        windowManager = saverAndLoader.initWindowManager();
+        windowManager = new WindowManager();
         List<SaveLoadState> windows = findAndCreateWindows();
-        recoverWindows(windows);
+        windowManager.recoverWindows(windows, saverAndLoader.getAllParameters());
         addWindows(windows);
 
         setContentPane(desktopPane);
-
         setJMenuBar(createMenuBar());
 
         addWindowListener(new WindowAdapter() {
@@ -45,7 +45,7 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
                 int option = addPaneWhenCloseMainFrame(e);
                 if (option == YES_OPTION) {
                     setVisible(false);
-                    saveWindowParams(windows);
+                    saverAndLoader.save(windowManager.getParameters(windows));
                     dispose();
                     System.exit(0);
                 }
@@ -54,25 +54,6 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
     }
 
-    /**
-     * Восстановление окон, прикрепленных к главному окну,
-     * из состояния перед закрытием программы
-     */
-    private void recoverWindows(List<SaveLoadState> windows) {
-        for (SaveLoadState window : windows) {
-            windowManager.recoverWindow(window);
-        }
-    }
-
-    /**
-     * Сохранить параметры окон в конфиг перед закрытием всего приложения
-     */
-    private void saveWindowParams(List<SaveLoadState> windows) {
-        for (SaveLoadState window : windows) {
-            windowManager.saveParameters(window);
-        }
-        saverAndLoader.save(windowManager.getWindowsParameters());
-    }
 
     /**
      * Добавляет все окна к главному окну
@@ -110,12 +91,15 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
             for (File file : files) {
                 String className = file.getName().substring(0, file.getName().length() - 6);
                 Class<?> clazz = Class.forName("gui" + '.' + className);
-                if (SaveLoadState.class.isAssignableFrom(clazz) &
-                        !MainApplicationFrame.class.isAssignableFrom(clazz)) {
-                    SaveLoadState newWindow = (SaveLoadState) clazz
-                            .getDeclaredConstructor()
-                            .newInstance();
-                    classes.add(newWindow);
+                if (SaveLoadState.class.isAssignableFrom(clazz)) {
+                    if (!MainApplicationFrame.class.isAssignableFrom(clazz)) {
+                        SaveLoadState newWindow = (SaveLoadState) clazz
+                                .getDeclaredConstructor()
+                                .newInstance();
+                        classes.add(newWindow);
+                    } else {
+                        classes.add(this);
+                    }
                 }
             }
         } catch (ClassNotFoundException e) {
@@ -259,7 +243,6 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
 
     @Override
     public void loadState(Map<String, Integer> parametres) {
-
         try {
             setSize(parametres.get("width"),
                     parametres.get("height"));
@@ -271,7 +254,6 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
             setBounds(inset, inset, screenSize.width - inset * 2,
                     screenSize.height - inset * 2);
         }
-
     }
 
     @Override

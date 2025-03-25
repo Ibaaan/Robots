@@ -4,13 +4,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Читает данные из state.cfg и сохраняет данные в state.cfg
  */
 public class SaverAndLoader {
-    private Properties properties = new Properties();
+
     private final String filePath =
             System.getProperty("user.home") +
                     File.separator + "Kushtanov" +
@@ -18,35 +20,11 @@ public class SaverAndLoader {
     private final File file = new File(filePath);
 
     /**
-     * Инициализация properties из state.cfg
-     */
-    public SaverAndLoader() {
-        if (file.exists() & file.canRead()) {
-            properties = new Properties();
-            try (FileInputStream fis = new FileInputStream(file)) {
-                properties.load(fis);
-            } catch (IOException ex) {
-                System.out.println("Не удалось получить доступ к файлу с конфигом\n" +
-                        ex);
-            }
-        }
-    }
-
-    /**
-     * Инициализирует WindowManager
-     */
-    public WindowManager initWindowManager() {
-        return new WindowManager(
-                getWindowNames(),
-                getAllParameters());
-    }
-
-    /**
      * Возвращает Map со всеми параметрами окна, хранящихся в файле
      */
-    private Map<String, Integer> getAllParameters() {
+    public Map<String, Integer> getAllParameters() {
         Map<String, Integer> result = new HashMap<>();
-
+        Properties properties = readConfig();
         for (Object key : properties.keySet()) {
             try {
                 result.put(
@@ -57,21 +35,6 @@ public class SaverAndLoader {
                 System.out.println("Значение по ключу " + key.toString() +
                         " не является числом\n" + e);
             }
-        }
-        return result;
-    }
-
-    /**
-     * Возвращает набор имен окон, хранящихся в файле
-     */
-    private Set<String> getWindowNames() {
-        HashSet<String> result = new HashSet<>();
-        if (properties == null) {
-            return result;
-        }
-
-        for (Object key : properties.keySet()) {
-            result.add(((String) key).split("\\.")[0]);
         }
         return result;
     }
@@ -105,5 +68,22 @@ public class SaverAndLoader {
         } catch (IOException e) {
             System.out.println("Не удалось записать параметры в файл\n" + e);
         }
+    }
+
+    /**
+     * Считывает параметры из конфига и инициализирует свойства
+     */
+    private Properties readConfig() {
+        Properties properties = new Properties();
+        if (file.exists() & file.canRead()) {
+            properties = new Properties();
+            try (FileInputStream fis = new FileInputStream(file)) {
+                properties.load(fis);
+            } catch (IOException ex) {
+                System.out.println("Не удалось получить доступ к файлу с конфигом\n" +
+                        ex);
+            }
+        }
+        return properties;
     }
 }

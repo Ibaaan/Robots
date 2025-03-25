@@ -22,16 +22,14 @@ public class GameWindow extends JInternalFrame implements SaveLoadState {
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(m_visualizer, BorderLayout.CENTER);
         getContentPane().add(panel);
+        setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
         pack();
-
         setDefaultCloseOperation(HIDE_ON_CLOSE);
     }
 
     @Override
     public void loadState(Map<String, Integer> parametres) {
-        if (parametres == null) {
-            setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-        } else {
+        if (parametres != null) {
             setSize(parametres.getOrDefault("width", DEFAULT_WIDTH),
                     parametres.getOrDefault("height", DEFAULT_HEIGHT));
             setLocation(parametres.getOrDefault("x", DEFAULT_X),
