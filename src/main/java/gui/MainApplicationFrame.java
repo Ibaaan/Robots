@@ -40,6 +40,11 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
         setContentPane(desktopPane);
         setJMenuBar(createMenuBar());
 
+        int inset = 50;
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        setBounds(inset, inset, screenSize.width - inset * 2,
+                screenSize.height - inset * 2);
+
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -56,7 +61,7 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
      */
     private void addWindows(List<SaveLoadState> windows) {
         for (SaveLoadState window : new FilterJInternalFrame().filter(windows)) {
-            addWindow((JInternalFrame) window);
+            addWindow((JInternalFrameExtended) window);
         }
     }
 
@@ -251,10 +256,7 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
             setLocation(parametres.get("x"),
                     parametres.get("y"));
         } catch (Exception e) {
-            int inset = 50;
-            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-            setBounds(inset, inset, screenSize.width - inset * 2,
-                    screenSize.height - inset * 2);
+
         }
     }
 

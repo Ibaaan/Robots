@@ -14,7 +14,10 @@ public class WindowManager {
     public void recoverWindows(List<SaveLoadState> windows,
                                Map<String, Integer> windowsParameters) {
         for (SaveLoadState window : windows) {
-            window.loadState(filterParameters(window.getFName(), windowsParameters));
+            Map<String, Integer> params = filterParameters(window.getFName(), windowsParameters);
+            if (!params.isEmpty()) {
+                window.loadState(params);
+            }
         }
     }
 
