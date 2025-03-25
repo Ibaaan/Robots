@@ -24,6 +24,7 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
     private final Locale locale;
     private final WindowManager windowManager;
     private final SaverAndLoader saverAndLoader;
+    private final List<SaveLoadState> windows;
 
     public MainApplicationFrame() {
 
@@ -32,7 +33,7 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
 
         locale = Locale.of("ru", "RUS");
         windowManager = new WindowManager();
-        List<SaveLoadState> windows = findAndCreateWindows();
+        windows = findAndCreateWindows();
         windowManager.recoverWindows(windows, saverAndLoader.getAllParameters());
         addWindows(windows);
 
@@ -42,13 +43,8 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                int option = addPaneWhenCloseMainFrame(e);
-                if (option == YES_OPTION) {
-                    setVisible(false);
-                    saverAndLoader.save(windowManager.getParameters(windows));
-                    dispose();
-                    System.exit(0);
-                }
+                onWindowClosingEvent(e);
+
             }
         });
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -115,21 +111,27 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
     }
 
     /**
-     * Создает панель подтверждения выхода
+     * Обработка выхода из приложения,
+     * создание диалогового окна
      */
-    private int addPaneWhenCloseMainFrame(WindowEvent e) {
+    private void onWindowClosingEvent(WindowEvent e) {
         ResourceBundle rb = ResourceBundle.getBundle(
                 "localization/JOptionPane", locale);
         Object[] options = {rb.getString("Yes"), rb.getString("No")};
-        return JOptionPane.showOptionDialog(
+        int option = JOptionPane.showOptionDialog(
                 e.getWindow(),
                 rb.getString("ExitConfirm"),
                 "Панельная выходка",
                 JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null, options, options[0]);
+        if (option == YES_OPTION) {
+            setVisible(false);
+            saverAndLoader.save(windowManager.getParameters(windows));
+            dispose();
+            System.exit(0);
+        }
     }
-
 
     protected void addWindow(Component frame) {
         desktopPane.add(frame);

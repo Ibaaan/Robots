@@ -16,6 +16,5 @@ public class RobotsProgram
       SwingUtilities.invokeLater(() -> {
         MainApplicationFrame frame = new MainApplicationFrame();
         frame.setVisible(true);
-
       });
     }}
