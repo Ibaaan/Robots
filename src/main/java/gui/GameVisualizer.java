@@ -29,18 +29,21 @@ public class GameVisualizer extends JPanel {
         m_timer.schedule(new TimerTask() {
             @Override
             public void run() {
+//                System.out.println("draw");
                 onRedrawEvent();
             }
         }, 0, 50);
         m_timer.schedule(new TimerTask() {
             @Override
             public void run() {
+//                System.out.println("model");
                 onModelUpdateEvent();
             }
         }, 0, 10);
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                System.out.println("shit");
                 setTargetPosition(e.getPoint());
                 repaint();
             }
@@ -77,15 +80,20 @@ public class GameVisualizer extends JPanel {
             return;
         }
         double velocity = maxVelocity;
-        double angleToTarget = angleTo(m_robotPositionX, m_robotPositionY, m_targetPositionX, m_targetPositionY);
+        double angleToTarget = angleTo(m_robotPositionX, m_robotPositionY,
+                m_targetPositionX, m_targetPositionY);
         double angularVelocity = 0;
-        if ((angleToTarget - m_robotDirection > 0 && angleToTarget - m_robotDirection < Math.PI)
-                | (angleToTarget - m_robotDirection > -2 * Math.PI && angleToTarget - m_robotDirection < -Math.PI)) {
-//            System.out.println("+");
+        if ((angleToTarget - m_robotDirection > 0 &&
+                angleToTarget - m_robotDirection < Math.PI)
+                |
+                (angleToTarget - m_robotDirection > -2 * Math.PI &&
+                        angleToTarget - m_robotDirection < -Math.PI)) {
             angularVelocity = maxAngularVelocity;
-        } else if ((angleToTarget - m_robotDirection < 0 && angleToTarget - m_robotDirection > -Math.PI)
-                | (angleToTarget - m_robotDirection < 2 * Math.PI && angleToTarget - m_robotDirection > Math.PI)) {
-//            System.out.println("-");
+        } else if ((angleToTarget - m_robotDirection < 0 &&
+                angleToTarget - m_robotDirection > -Math.PI)
+                |
+                (angleToTarget - m_robotDirection < 2 * Math.PI &&
+                        angleToTarget - m_robotDirection > Math.PI)) {
             angularVelocity = -maxAngularVelocity;
         }
 
@@ -98,7 +106,7 @@ public class GameVisualizer extends JPanel {
 
     /**
      * Возвращает значение true, если целевая точка
-     * находится d одном из кругов траектории,
+     * находится в одном из кругов траектории,
      * в противном случае значение false
      */
     private boolean oppositeIfBug(double velocity, double angularVelocity) {
@@ -174,17 +182,6 @@ public class GameVisualizer extends JPanel {
         Graphics2D g2d = (Graphics2D) g;
         drawRobot(g2d, round(m_robotPositionX), round(m_robotPositionY), m_robotDirection);
         drawTarget(g2d, m_targetPositionX, m_targetPositionY);
-        g2d.setColor(Color.blue);
-        g2d.drawLine(round(m_robotPositionX), round(m_robotPositionY), m_targetPositionX, m_targetPositionY);
-        g2d.setColor(Color.red);
-
-
-        g2d.drawLine(round(m_robotPositionX), round(m_robotPositionY),
-                round(100 * Math.cos(m_robotDirection) + m_robotPositionX),
-                round(100 * Math.sin(m_robotDirection) + m_robotPositionY));
-//        System.out.println((round(10 * Math.cos(m_robotDirection) - m_robotPositionX)) + " " +
-//                round(18 * Math.sin(m_robotDirection) - m_robotPositionY) + " " +
-//                round(m_robotPositionX) + " " + round(m_robotPositionY));
     }
 
     private static void fillOval(Graphics g, int centerX, int centerY, int diam1, int diam2) {
@@ -193,7 +190,6 @@ public class GameVisualizer extends JPanel {
 
     private static void drawOval(Graphics g, int centerX, int centerY, int diam1, int diam2) {
         g.drawOval(centerX - diam1 / 2, centerY - diam2 / 2, diam1, diam2);
-
     }
 
     private void drawRobot(Graphics2D g, int x, int y, double direction) {
