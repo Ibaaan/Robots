@@ -14,8 +14,6 @@ public class LogWindow extends JInternalFrame implements LogChangeListener, Save
     private static final Integer DEFAULT_HEIGHT = 800;
     private static final Integer DEFAULT_X = 10;
     private static final Integer DEFAULT_Y = 10;
-    private static final Integer DEFAULT_MAXIMUM = 1;
-    //    private final LogWindowSource m_logSource;
     private final TextArea m_logContent;
 
     public LogWindow() {

@@ -9,11 +9,10 @@ import java.util.Map;
 public class GameWindow extends JInternalFrame implements SaveLoadState {
     private static final Integer DEFAULT_WIDTH = 400;
     private static final Integer DEFAULT_HEIGHT = 400;
-    private final GameVisualizer m_visualizer;
 
     public GameWindow() {
         super("Игровое поле", true, true, true, true);
-        m_visualizer = new GameVisualizer();
+        GameVisualizer m_visualizer = new GameVisualizer();
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(m_visualizer, BorderLayout.CENTER);
         getContentPane().add(panel);
