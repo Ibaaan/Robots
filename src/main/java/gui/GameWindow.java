@@ -6,7 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Map;
 
-public class GameWindow extends JInternalFrameExtended implements SaveLoadState {
+public class GameWindow extends JInternalFrame implements SaveLoadState {
     private static final Integer DEFAULT_WIDTH = 400;
     private static final Integer DEFAULT_HEIGHT = 400;
     private final GameVisualizer m_visualizer;
@@ -23,12 +23,12 @@ public class GameWindow extends JInternalFrameExtended implements SaveLoadState 
 
     @Override
     public void loadState(Map<String, Integer> parametres) {
-        setParameters(parametres);
+        new WindowController().setParameters(this, parametres);
     }
 
     @Override
     public Map<String, Integer> saveState() {
-        return getParameters();
+        return new WindowController().getParameters(this);
     }
 
     @Override

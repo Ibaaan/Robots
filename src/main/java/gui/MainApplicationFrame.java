@@ -27,7 +27,10 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
     private final List<SaveLoadState> windows;
 
     public MainApplicationFrame() {
-
+        int inset = 50;
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        setBounds(inset, inset, screenSize.width - inset * 2,
+                screenSize.height - inset * 2);
 
         saverAndLoader = new SaverAndLoader();
 
@@ -39,11 +42,6 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
 
         setContentPane(desktopPane);
         setJMenuBar(createMenuBar());
-
-        int inset = 50;
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        setBounds(inset, inset, screenSize.width - inset * 2,
-                screenSize.height - inset * 2);
 
         addWindowListener(new WindowAdapter() {
             @Override
@@ -61,7 +59,7 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
      */
     private void addWindows(List<SaveLoadState> windows) {
         for (SaveLoadState window : new FilterJInternalFrame().filter(windows)) {
-            addWindow((JInternalFrameExtended) window);
+            addWindow((JInternalFrame) window);
         }
     }
 
@@ -250,23 +248,11 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
 
     @Override
     public void loadState(Map<String, Integer> parametres) {
-        try {
-            setSize(parametres.get("width"),
-                    parametres.get("height"));
-            setLocation(parametres.get("x"),
-                    parametres.get("y"));
-        } catch (Exception e) {
-
-        }
+        new WindowController().setParameters(this, parametres);
     }
 
     @Override
     public Map<String, Integer> saveState() {
-        HashMap<String, Integer> result = new HashMap<>();
-        result.put("width", getBounds().width);
-        result.put("height", getBounds().height);
-        result.put("x", getBounds().x);
-        result.put("y", getBounds().y);
-        return result;
+        return new WindowController().getParameters(this);
     }
 }

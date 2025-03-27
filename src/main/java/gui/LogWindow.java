@@ -9,7 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Map;
 
-public class LogWindow extends JInternalFrameExtended implements LogChangeListener, SaveLoadState {
+public class LogWindow extends JInternalFrame implements LogChangeListener, SaveLoadState {
     private static final Integer DEFAULT_WIDTH = 300;
     private static final Integer DEFAULT_HEIGHT = 800;
     private static final Integer DEFAULT_X = 10;
@@ -56,11 +56,11 @@ public class LogWindow extends JInternalFrameExtended implements LogChangeListen
 
     @Override
     public void loadState(Map<String, Integer> parametres) {
-        setParameters(parametres);
+        new WindowController().setParameters(this, parametres);
     }
 
     @Override
     public Map<String, Integer> saveState() {
-        return getParameters();
+        return new WindowController().getParameters(this);
     }
 }
