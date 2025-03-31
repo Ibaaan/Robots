@@ -27,7 +27,7 @@ class WindowManagerTest {
         Map<String, Integer> test = new HashMap<>();
         test.put("game.height", 100);
         test.put("game.width", 100);
-        GameWindow gameWindow = new GameWindow();
+        GameWindow gameWindow = new GameWindow(null);
 
         windowManager.recoverWindows(List.of(gameWindow), test);
         Assertions.assertEquals(gameWindow.getHeight(), 100);

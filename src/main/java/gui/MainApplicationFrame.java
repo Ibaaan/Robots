@@ -15,6 +15,7 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.List;
+import java.util.Timer;
 import java.util.*;
 
 import static javax.swing.JOptionPane.YES_OPTION;
@@ -25,8 +26,19 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
     private final WindowManager windowManager;
     private final SaverAndLoader saverAndLoader;
     private final List<SaveLoadState> windows;
+    private final DataModel model;
 
     public MainApplicationFrame() {
+        model = new DataModel();
+
+        Timer m_timer = new Timer("events generator", true);
+        m_timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                model.onModelUpdateEvent();
+            }
+        }, 0, 10);
+
         int inset = 50;
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setBounds(inset, inset, screenSize.width - inset * 2,
@@ -36,7 +48,8 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
 
         locale = Locale.of("ru", "RUS");
         windowManager = new WindowManager();
-        windows = findAndCreateWindows();
+//        windows = findAndCreateWindows();
+        windows = createWindows();
         windowManager.recoverWindows(windows, saverAndLoader.getAllParameters());
         addWindows(windows);
 
@@ -51,6 +64,27 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
             }
         });
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+    }
+
+    private List<SaveLoadState> createWindows() {
+        return List.of(
+                createGameWindow(),
+                createLogWindow(),
+                createCoordinatesWindow(),
+                this
+        );
+    }
+
+    private SaveLoadState createCoordinatesWindow() {
+        return new CoordinatesWindow(model);
+    }
+
+    private SaveLoadState createLogWindow() {
+        return new LogWindow();
+    }
+
+    private SaveLoadState createGameWindow() {
+        return new GameWindow(model);
     }
 
 

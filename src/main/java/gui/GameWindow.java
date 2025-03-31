@@ -4,18 +4,29 @@ import state.SaveLoadState;
 
 import javax.swing.*;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Map;
 
-public class GameWindow extends JInternalFrame implements SaveLoadState {
+public class GameWindow extends JInternalFrame implements SaveLoadState, PropertyChangeListener {
     private static final Integer DEFAULT_WIDTH = 400;
     private static final Integer DEFAULT_HEIGHT = 400;
+    private final GameVisualizer m_visualizer;
+    private final DataModel model;
 
-    public GameWindow() {
+    public GameWindow(DataModel model) {
         super("Игровое поле", true, true, true, true);
-        GameVisualizer m_visualizer = new GameVisualizer();
+        this.model = model;
+
+        m_visualizer = new GameVisualizer(model);
+
+
+        model.addTextChangeListener(this);
+
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(m_visualizer, BorderLayout.CENTER);
         getContentPane().add(panel);
+
         setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
         setDefaultCloseOperation(HIDE_ON_CLOSE);
     }
@@ -33,5 +44,11 @@ public class GameWindow extends JInternalFrame implements SaveLoadState {
     @Override
     public String getFName() {
         return "game";
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+
+        m_visualizer.onRedrawEvent();
     }
 }
