@@ -2,9 +2,7 @@ package gui;
 
 import log.Logger;
 import state.SaveLoadState;
-import state.SaverAndLoader;
 import state.WindowManager;
-import windowfilter.FilterJInternalFrame;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,13 +15,11 @@ import java.net.URL;
 import java.util.List;
 import java.util.*;
 
-import static javax.swing.JOptionPane.YES_OPTION;
-
 public class MainApplicationFrame extends JFrame implements SaveLoadState {
     private final JDesktopPane desktopPane = new JDesktopPane();
     private final Locale locale;
     private final WindowManager windowManager;
-    private final SaverAndLoader saverAndLoader;
+
     private final List<SaveLoadState> windows;
 
     public MainApplicationFrame() {
@@ -32,13 +28,12 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
         setBounds(inset, inset, screenSize.width - inset * 2,
                 screenSize.height - inset * 2);
 
-        saverAndLoader = new SaverAndLoader();
-
         locale = Locale.of("ru", "RUS");
         windowManager = new WindowManager();
         windows = findAndCreateWindows();
-        windowManager.recoverWindows(windows, saverAndLoader.getAllParameters());
         addWindows(windows);
+        windows.add(this);
+        windowManager.recoverWindows(windows);
 
         setContentPane(desktopPane);
         setJMenuBar(createMenuBar());
@@ -58,7 +53,7 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
      * Добавляет все окна к главному окну
      */
     private void addWindows(List<SaveLoadState> windows) {
-        for (SaveLoadState window : new FilterJInternalFrame().filter(windows)) {
+        for (SaveLoadState window : windows) {
             addWindow((JInternalFrame) window);
         }
     }
@@ -96,8 +91,6 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
                                 .getDeclaredConstructor()
                                 .newInstance();
                         classes.add(newWindow);
-                    } else {
-                        classes.add(this);
                     }
                 }
             }
@@ -128,15 +121,15 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
                 JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null, options, options[0]);
-        if (option == YES_OPTION) {
+        if (option == JOptionPane.YES_OPTION) {
             setVisible(false);
-            saverAndLoader.save(windowManager.getParameters(windows));
+            windowManager.saveWindows(windows);
             dispose();
             System.exit(0);
         }
     }
 
-    protected void addWindow(Component frame) {
+    protected void addWindow(JInternalFrame frame) {
         desktopPane.add(frame);
         frame.setVisible(true);
     }
