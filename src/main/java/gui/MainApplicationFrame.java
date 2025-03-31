@@ -3,6 +3,7 @@ package gui;
 import log.Logger;
 import state.SaveLoadState;
 import state.WindowManager;
+import state.WindowStateUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -241,11 +242,11 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
 
     @Override
     public void loadState(Map<String, Integer> parametres) {
-        new WindowController().setParameters(this, parametres);
+        WindowStateUtils.setParameters(this, parametres);
     }
 
     @Override
     public Map<String, Integer> saveState() {
-        return new WindowController().getParameters(this);
+        return WindowStateUtils.getParameters(this);
     }
 }

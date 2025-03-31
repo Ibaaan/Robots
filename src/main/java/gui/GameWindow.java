@@ -1,6 +1,7 @@
 package gui;
 
 import state.SaveLoadState;
+import state.WindowStateUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,12 +23,12 @@ public class GameWindow extends JInternalFrame implements SaveLoadState {
 
     @Override
     public void loadState(Map<String, Integer> parametres) {
-        new WindowController().setParameters(this, parametres);
+        WindowStateUtils.setParameters(this, parametres);
     }
 
     @Override
     public Map<String, Integer> saveState() {
-        return new WindowController().getParameters(this);
+        return WindowStateUtils.getParameters(this);
     }
 
     @Override

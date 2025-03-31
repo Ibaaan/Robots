@@ -4,6 +4,7 @@ import log.LogChangeListener;
 import log.LogEntry;
 import log.Logger;
 import state.SaveLoadState;
+import state.WindowStateUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -54,11 +55,11 @@ public class LogWindow extends JInternalFrame implements LogChangeListener, Save
 
     @Override
     public void loadState(Map<String, Integer> parametres) {
-        new WindowController().setParameters(this, parametres);
+        WindowStateUtils.setParameters(this, parametres);
     }
 
     @Override
     public Map<String, Integer> saveState() {
-        return new WindowController().getParameters(this);
+        return WindowStateUtils.getParameters(this);
     }
 }
