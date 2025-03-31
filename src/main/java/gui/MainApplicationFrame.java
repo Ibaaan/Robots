@@ -15,7 +15,6 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.List;
-import java.util.Timer;
 import java.util.*;
 
 import static javax.swing.JOptionPane.YES_OPTION;
@@ -30,14 +29,6 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
 
     public MainApplicationFrame() {
         model = new DataModel();
-
-        Timer m_timer = new Timer("events generator", true);
-        m_timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                model.onModelUpdateEvent();
-            }
-        }, 0, 10);
 
         int inset = 50;
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();

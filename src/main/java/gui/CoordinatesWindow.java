@@ -8,6 +8,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
 
+/**
+ * Окно с координатами робота
+ */
 public class CoordinatesWindow extends JInternalFrame implements SaveLoadState, PropertyChangeListener {
     private final DataModel model;
     private final JLabel content;

@@ -12,15 +12,11 @@ public class GameWindow extends JInternalFrame implements SaveLoadState, Propert
     private static final Integer DEFAULT_WIDTH = 400;
     private static final Integer DEFAULT_HEIGHT = 400;
     private final GameVisualizer m_visualizer;
-    private final DataModel model;
 
     public GameWindow(DataModel model) {
         super("Игровое поле", true, true, true, true);
-        this.model = model;
 
         m_visualizer = new GameVisualizer(model);
-
-
         model.addTextChangeListener(this);
 
         JPanel panel = new JPanel(new BorderLayout());
@@ -48,7 +44,6 @@ public class GameWindow extends JInternalFrame implements SaveLoadState, Propert
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-
         m_visualizer.onRedrawEvent();
     }
 }

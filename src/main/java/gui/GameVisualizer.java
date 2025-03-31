@@ -6,10 +6,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 
+/**
+ * Визуализация окна GameWindow
+ */
 public class GameVisualizer extends JPanel {
-
     private final DataModel model;
-
 
     public GameVisualizer(DataModel model) {
         this.model = model;
@@ -23,13 +24,9 @@ public class GameVisualizer extends JPanel {
         setDoubleBuffered(true);
     }
 
-
     public void onRedrawEvent() {
         EventQueue.invokeLater(this::repaint);
     }
-
-
-
 
     @Override
     public void paint(Graphics g) {

@@ -3,7 +3,12 @@ package gui;
 import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Timer;
+import java.util.TimerTask;
 
+/**
+ * Модель описывающая движение робота к цели
+ */
 public class DataModel {
     private static final String PROPERTY_NAME = "model";
     private volatile double m_robotPositionX = 100;
@@ -19,6 +24,15 @@ public class DataModel {
     private final PropertyChangeSupport propChangeDispatcher =
             new PropertyChangeSupport(this);
 
+    public DataModel() {
+        Timer m_timer = new Timer("events generator", true);
+        m_timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                onModelUpdateEvent();
+            }
+        }, 0, 10);
+    }
 
     private double distance(double x1, double y1, double x2, double y2) {
         double diffX = x1 - x2;
@@ -33,7 +47,7 @@ public class DataModel {
         return asNormalizedRadians(Math.atan2(diffY, diffX));
     }
 
-    public void onModelUpdateEvent() {
+    private void onModelUpdateEvent() {
         double distance = distance(m_targetPositionX, m_targetPositionY,
                 m_robotPositionX, m_robotPositionY);
         if (distance < 0.5) {
@@ -122,8 +136,6 @@ public class DataModel {
         m_robotPositionY = newY;
         double newDirection = asNormalizedRadians(m_robotDirection + angularVelocity * duration);
         m_robotDirection = newDirection;
-
-
     }
 
     private int round(double value) {
