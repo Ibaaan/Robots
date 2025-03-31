@@ -2,7 +2,7 @@ package gui;
 
 import log.Logger;
 import state.SaveLoadState;
-import state.WindowManager;
+import state.WindowStateManager;
 import state.WindowStateUtils;
 
 import javax.swing.*;
@@ -19,7 +19,7 @@ import java.util.*;
 public class MainApplicationFrame extends JFrame implements SaveLoadState {
     private final JDesktopPane desktopPane = new JDesktopPane();
     private final Locale locale;
-    private final WindowManager windowManager;
+    private final WindowStateManager windowStateManager;
 
     private final List<SaveLoadState> windows;
 
@@ -30,11 +30,11 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
                 screenSize.height - inset * 2);
 
         locale = Locale.of("ru", "RUS");
-        windowManager = new WindowManager();
+        windowStateManager = new WindowStateManager();
         windows = findAndCreateWindows();
         addWindows(windows);
         windows.add(this);
-        windowManager.recoverWindows(windows);
+        windowStateManager.recoverWindows(windows);
 
         setContentPane(desktopPane);
         setJMenuBar(createMenuBar());
@@ -124,7 +124,7 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
                 null, options, options[0]);
         if (option == JOptionPane.YES_OPTION) {
             setVisible(false);
-            windowManager.saveWindows(windows);
+            windowStateManager.saveWindows(windows);
             dispose();
             System.exit(0);
         }

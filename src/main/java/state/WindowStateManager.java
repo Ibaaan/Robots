@@ -7,11 +7,11 @@ import java.util.Map;
 /**
  * Восстанавливает свойства окон, формирует словарь для сохранения в файл
  */
-public class WindowManager {
-    private final SaverAndLoader saverAndLoader;
+public class WindowStateManager {
+    private final FileStateManager fileStateManager;
 
-    public WindowManager() {
-        this.saverAndLoader = new SaverAndLoader();
+    public WindowStateManager() {
+        this.fileStateManager = new FileStateManager();
     }
 
     /**
@@ -19,7 +19,7 @@ public class WindowManager {
      */
     public void recoverWindows(List<SaveLoadState> windows) {
         Map<String, Integer> windowsProperties =
-                saverAndLoader.getAllParameters();
+                fileStateManager.getAllProperties();
         for (SaveLoadState window : windows) {
             Map<String, Integer> params = filterProperties(window.getFName(), windowsProperties);
             if (!params.isEmpty()) {
@@ -32,6 +32,7 @@ public class WindowManager {
      * Фильтрует свойства по названию окна и возвращает их
      * в качестве Map, если название не найдено возвращает null
      */
+    // TODO
     private Map<String, Integer> filterProperties(String name,
                                                   Map<String, Integer> windowsParameters) {
         Map<String, Integer> result = new HashMap<>();
@@ -70,6 +71,6 @@ public class WindowManager {
      * Сохраняет свойства окон
      */
     public void saveWindows(List<SaveLoadState> windows) {
-        saverAndLoader.save(formStringProperties(windows));
+        fileStateManager.save(formStringProperties(windows));
     }
 }
