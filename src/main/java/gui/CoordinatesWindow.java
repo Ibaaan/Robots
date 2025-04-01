@@ -1,5 +1,6 @@
 package gui;
 
+import game.GameModel;
 import state.SaveLoadState;
 
 import javax.swing.*;
@@ -12,11 +13,11 @@ import java.util.Map;
  * Окно с координатами робота
  */
 public class CoordinatesWindow extends JInternalFrame implements SaveLoadState, PropertyChangeListener {
-    private final DataModel model;
+    private final GameModel model;
     private final JLabel content;
     private String robotCoordinates;
 
-    public CoordinatesWindow(DataModel model) {
+    public CoordinatesWindow(GameModel model) {
         super("Координатное окно", true, true, true, true);
         this.model = model;
         content = new JLabel(robotCoordinates);

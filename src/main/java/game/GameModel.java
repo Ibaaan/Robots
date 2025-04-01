@@ -1,15 +1,13 @@
-package gui;
+package game;
 
 import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Модель описывающая движение робота к цели
  */
-public class DataModel {
+public class GameModel {
     private static final String PROPERTY_NAME = "model";
     private volatile double m_robotPositionX = 100;
     private volatile double m_robotPositionY = 100;
@@ -24,15 +22,6 @@ public class DataModel {
     private final PropertyChangeSupport propChangeDispatcher =
             new PropertyChangeSupport(this);
 
-    public DataModel() {
-        Timer m_timer = new Timer("events generator", true);
-        m_timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                onModelUpdateEvent();
-            }
-        }, 0, 10);
-    }
 
     private double distance(double x1, double y1, double x2, double y2) {
         double diffX = x1 - x2;
@@ -47,7 +36,7 @@ public class DataModel {
         return asNormalizedRadians(Math.atan2(diffY, diffX));
     }
 
-    private void onModelUpdateEvent() {
+    public void onModelUpdateEvent() {
         double distance = distance(m_targetPositionX, m_targetPositionY,
                 m_robotPositionX, m_robotPositionY);
         if (distance < 0.5) {
@@ -171,6 +160,7 @@ public class DataModel {
     public void setTargetPosition(Point p) {
         m_targetPositionX = p.x;
         m_targetPositionY = p.y;
+        propChangeDispatcher.firePropertyChange(PROPERTY_NAME, true, false);
     }
 
     public double getDirection() {

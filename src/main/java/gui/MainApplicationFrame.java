@@ -1,5 +1,6 @@
 package gui;
 
+import game.GameModel;
 import log.Logger;
 import state.SaveLoadState;
 import state.SaverAndLoader;
@@ -25,10 +26,10 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
     private final WindowManager windowManager;
     private final SaverAndLoader saverAndLoader;
     private final List<SaveLoadState> windows;
-    private final DataModel model;
+    private final GameModel model;
 
     public MainApplicationFrame() {
-        model = new DataModel();
+        model = new GameModel();
 
         int inset = 50;
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();

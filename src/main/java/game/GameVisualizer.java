@@ -1,27 +1,29 @@
-package gui;
+package game;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * Визуализация окна GameWindow
  */
-public class GameVisualizer extends JPanel {
-    private final DataModel model;
+public class GameVisualizer extends JPanel implements PropertyChangeListener {
+    private final GameModel model;
 
-    public GameVisualizer(DataModel model) {
+    public GameVisualizer(GameModel model, GameController controller) {
         this.model = model;
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                model.setTargetPosition(e.getPoint());
-                repaint();
+                controller.setTargetPosition(e.getPoint());
             }
         });
         setDoubleBuffered(true);
+        model.addTextChangeListener(this);
     }
 
     public void onRedrawEvent() {
@@ -69,5 +71,10 @@ public class GameVisualizer extends JPanel {
         fillOval(g, x, y, 5, 5);
         g.setColor(Color.BLACK);
         drawOval(g, x, y, 5, 5);
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        onRedrawEvent();
     }
 }
