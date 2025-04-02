@@ -7,17 +7,17 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Читает данные из state.cfg и сохраняет данные в state.cfg
  */
 public class FileStateManager {
-
-    private final String filePath =
-            System.getProperty("user.home") +
-                    File.separator + "Kushtanov" +
-                    File.separator + "state.config";
-    private final File file = new File(filePath);
+    private static final Logger logger = Logger.getLogger(FileStateManager.class.getName());
+    private final String filePath = System.getProperty("user.home") +
+            File.separator + "Kushtanov" +
+            File.separator + "state.config";
 
     /**
      * Возвращает Map со всеми параметрами окна, хранящихся в файле
@@ -25,16 +25,13 @@ public class FileStateManager {
     public Map<String, Integer> getAllProperties() {
         Map<String, Integer> result = new HashMap<>();
         Properties properties = readConfig();
-        for (Object key : properties.keySet()) {
+        for (String key : properties.stringPropertyNames()) {
             try {
-                result.put(
-                        (String) key,
-                        Integer.parseInt((String) properties.get(key))
-                );
+                result.put(key,
+                        Integer.parseInt((String) properties.get(key)));
             } catch (NumberFormatException e) {
-                System.out.println("Значение по ключу " + key.toString() +
-                        " не является числом\n");
-                e.printStackTrace();
+                logger.log(Level.WARNING, "Значение по ключу " + key +
+                        " не является числом", e);
             }
         }
         return result;
@@ -46,28 +43,30 @@ public class FileStateManager {
     public void save(Map<String, Integer> properties) {
         File folder = new File(System.getProperty("user.home") +
                 File.separator + "Kushtanov");
+        File file = new File(filePath);
 
-        if (!folder.exists()) {
-            folder.mkdir();
+        if (!folder.exists() && !folder.mkdirs()) {
+            logger.severe("Ошибка при создании директории: " + folder.getAbsolutePath());
+            return;
         }
 
         try {
-            file.createNewFile();
+            if (file.createNewFile()) {
+                logger.info("Конфиг файл успешно создался: " + file.getAbsolutePath());
+            }
         } catch (IOException e) {
-            System.out.println("Файл с конфигом не создался\n");
-            e.printStackTrace();
-        }
-        System.out.println("Параметры успешно сохранены");
-        Properties savedProps = new Properties();
-        for (Map.Entry<String, Integer> entry : properties.entrySet()) {
-            savedProps.setProperty(entry.getKey(), entry.getValue().toString());
+            logger.log(Level.SEVERE, "Ошибка при создании конфига", e);
+            return;
         }
 
+        Properties savedProps = new Properties();
+        properties.forEach((key, value) -> savedProps.setProperty(key, value.toString()));
+
         try (FileWriter fileWriter = new FileWriter(filePath)) {
-            savedProps.store(fileWriter, "");
+            savedProps.store(fileWriter, "Window State Properties");
+            logger.info("Cвойства успешно сохранены");
         } catch (IOException e) {
-            System.out.println("Не удалось записать параметры в файл\n" + e);
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Не удалось записать параметры в файл", e);
         }
     }
 
@@ -76,13 +75,15 @@ public class FileStateManager {
      */
     private Properties readConfig() {
         Properties properties = new Properties();
+        File file = new File(filePath);
+
         if (file.exists() & file.canRead()) {
             properties = new Properties();
             try (FileInputStream fis = new FileInputStream(file)) {
                 properties.load(fis);
-            } catch (IOException ex) {
-                System.out.println("Не удалось получить доступ к файлу с конфигом\n");
-                ex.printStackTrace();
+            } catch (IOException e) {
+                logger.log(Level.SEVERE,
+                        "Не удалось получить доступ к файлу с конфигом", e);
             }
         }
         return properties;

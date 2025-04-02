@@ -6,11 +6,14 @@ import java.beans.PropertyVetoException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Восстанавливает свойства окон, формирует словарь для сохранения в файл
  */
 public class WindowStateManager {
+    private static final Logger logger = Logger.getLogger(WindowStateManager.class.getName());
     private static final Integer DEFAULT_MAX_SIZE = 1;
     private final FileStateManager fileStateManager;
 
@@ -58,18 +61,16 @@ public class WindowStateManager {
      * Устанавливает свернутость окна
      */
     private void setIconify(Component window, Map<String, Integer> parametres) {
-        if (window instanceof JInternalFrame window1) {
+        if (window instanceof JInternalFrame internalFrame) {
             try {
-                window1.setIcon(parametres.getOrDefault("maximum",
+                internalFrame.setIcon(parametres.getOrDefault("maximum",
                         DEFAULT_MAX_SIZE) == 0);
             } catch (PropertyVetoException e) {
-                System.out.println("WindowController:" +
-                        window.getClass() +
-                        "Не удается изменить размер окна\n");
-                e.printStackTrace();
+                logger.log(Level.WARNING, "WindowController:" + window.getClass() +
+                        "Не удается изменить размер окна", e);
             }
-        } else if (window instanceof JFrame window1) {
-            window1.setExtendedState(parametres.getOrDefault("maximum", JFrame.ICONIFIED));
+        } else if (window instanceof JFrame frame) {
+            frame.setExtendedState(parametres.getOrDefault("maximum", JFrame.ICONIFIED));
         }
     }
 
@@ -83,9 +84,8 @@ public class WindowStateManager {
             window.setLocation(parametres.get("x"),
                     parametres.get("y"));
         } catch (NullPointerException e) {
-            System.out.println("WindowController:" +
-                    window.getClass() +
-                    "Одно или все поля параметров отсутствуют\n" + e);
+            logger.log(Level.WARNING, "WindowController:" + window.getClass() +
+                    "Одно или все поля параметров отсутствуют", e);
         }
     }
 
@@ -103,10 +103,10 @@ public class WindowStateManager {
      * Добавляет свернутость окна
      */
     private void putIcon(Component window, Map<String, Integer> parameters) {
-        if (window instanceof JInternalFrame window1) {
-            parameters.put("maximum", window1.isIcon() ? 0 : 1);
-        } else if (window instanceof JFrame window1) {
-            parameters.put("maximum", window1.getExtendedState());
+        if (window instanceof JInternalFrame internalFrame) {
+            parameters.put("maximum", internalFrame.isIcon() ? 0 : 1);
+        } else if (window instanceof JFrame frame) {
+            parameters.put("maximum", frame.getExtendedState());
         }
     }
 
