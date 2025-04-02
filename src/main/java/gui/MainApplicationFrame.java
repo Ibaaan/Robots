@@ -10,11 +10,9 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MainApplicationFrame extends JFrame implements SaveLoadState {
     private final JDesktopPane desktopPane = new JDesktopPane();
@@ -24,20 +22,23 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
     private final List<SaveLoadState> windows;
 
     public MainApplicationFrame() {
+        windowStateManager = new WindowStateManager();
+
         int inset = 50;
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setBounds(inset, inset, screenSize.width - inset * 2,
                 screenSize.height - inset * 2);
 
         locale = Locale.of("ru", "RUS");
-        windowStateManager = new WindowStateManager();
-        windows = findAndCreateWindows();
-        addWindows(windows);
-        windows.add(this);
-        windowStateManager.recoverWindows(windows);
+
+        addWindow(new GameWindow());
+        addWindow(new LogWindow());
 
         setContentPane(desktopPane);
         setJMenuBar(createMenuBar());
+
+        windows = getSaveLoadStateWindows();
+        windowStateManager.recoverWindows(windows);
 
         addWindowListener(new WindowAdapter() {
             @Override
@@ -49,62 +50,16 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
     }
 
-
     /**
-     * Добавляет все окна к главному окну
+     * Возвращает все SaveLoadState окна, включая MainApplicationFrame
      */
-    private void addWindows(List<SaveLoadState> windows) {
-        for (SaveLoadState window : windows) {
-            addWindow((JInternalFrame) window);
-        }
-    }
-
-    /**
-     * Поиск и создание окон, которые реализуют интерфейс SaveLoadState
-     */
-    private List<SaveLoadState> findAndCreateWindows() {
-        List<SaveLoadState> classes = new ArrayList<>();
-        String path = "gui";
-
-
-        URL resource = ClassLoader.getSystemClassLoader().getResource(path);
-        if (resource == null) {
-            System.out.println("findClassesInPackage:Resources == null");
-            return classes;
-        }
-        File directory = new File(resource.getFile());
-        if (!directory.exists()) {
-            System.out.println("findClassesInPackage:directory == null");
-            return classes;
-        }
-        File[] files = directory.listFiles((dir, name) -> name.endsWith(".class"));
-        if (files == null) {
-            System.out.println("findClassesInPackage:files == null");
-            return classes;
-        }
-        try {
-            for (File file : files) {
-                String className = file.getName().substring(0, file.getName().length() - 6);
-                Class<?> clazz = Class.forName("gui" + '.' + className);
-                if (SaveLoadState.class.isAssignableFrom(clazz)) {
-                    if (!MainApplicationFrame.class.isAssignableFrom(clazz)) {
-                        SaveLoadState newWindow = (SaveLoadState) clazz
-                                .getDeclaredConstructor()
-                                .newInstance();
-                        classes.add(newWindow);
-                    }
-                }
-            }
-        } catch (ClassNotFoundException e) {
-            System.out.println("Класс не может быть найден\n" + e);
-        } catch (InvocationTargetException
-                 | InstantiationException
-                 | IllegalAccessException
-                 | NoSuchMethodException e) {
-            System.out.println("Класс не может быть инициализирован\n" + e);
-        }
-
-        return classes;
+    private List<SaveLoadState> getSaveLoadStateWindows() {
+        List<SaveLoadState> windows = Arrays.stream(getContentPane().getComponents())
+                .filter(component -> component instanceof SaveLoadState)
+                .map(component -> (SaveLoadState) component)
+                .collect(Collectors.toList());
+        windows.add(this);
+        return windows;
     }
 
     /**
@@ -130,7 +85,7 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
         }
     }
 
-    protected void addWindow(JInternalFrame frame) {
+    protected void addWindow(Component frame) {
         desktopPane.add(frame);
         frame.setVisible(true);
     }

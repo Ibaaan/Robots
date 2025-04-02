@@ -32,6 +32,9 @@ public class FileStateManager {
                         Integer.parseInt((String) properties.get(key))
                 );
             } catch (NumberFormatException e) {
+                System.out.println("Значение по ключу " + key.toString() +
+                        " не является числом\n");
+                e.printStackTrace();
             }
         }
         return result;
@@ -51,6 +54,8 @@ public class FileStateManager {
         try {
             file.createNewFile();
         } catch (IOException e) {
+            System.out.println("Файл с конфигом не создался\n");
+            e.printStackTrace();
         }
         System.out.println("Параметры успешно сохранены");
         Properties savedProps = new Properties();
@@ -59,10 +64,10 @@ public class FileStateManager {
         }
 
         try (FileWriter fileWriter = new FileWriter(filePath)) {
-
             savedProps.store(fileWriter, "");
-
         } catch (IOException e) {
+            System.out.println("Не удалось записать параметры в файл\n" + e);
+            e.printStackTrace();
         }
     }
 
@@ -76,6 +81,8 @@ public class FileStateManager {
             try (FileInputStream fis = new FileInputStream(file)) {
                 properties.load(fis);
             } catch (IOException ex) {
+                System.out.println("Не удалось получить доступ к файлу с конфигом\n");
+                ex.printStackTrace();
             }
         }
         return properties;
