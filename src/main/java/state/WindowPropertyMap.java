@@ -1,25 +1,22 @@
 package state;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Хранит свойства окон в виде ("windowName.propertyName" - propertyValue)
  */
 public class WindowPropertyMap extends AbstractMap<String, Integer> {
-    private final List<Entry<String, Integer>> table;
+    private final Map<String, Integer> properties;
 
     public WindowPropertyMap(Map<String, Integer> map) {
-        table = new ArrayList<>();
-        putAll(map);
+        this.properties = new HashMap<>(map);
     }
 
     public WindowPropertyMap() {
-        table = new ArrayList<>();
-    }
-
-    @Override
-    public Set<Entry<String, Integer>> entrySet() {
-        return Set.copyOf(table);
+        this.properties = new HashMap<>();
     }
 
     /**
@@ -27,11 +24,10 @@ public class WindowPropertyMap extends AbstractMap<String, Integer> {
      */
     public Map<String, Integer> filterByPrefix(String givenPrefix) {
         Map<String, Integer> result = new WindowPropertyMap();
-        for (String key : keySet()) {
-            String prefix = key.split("\\.")[0];
-            String suffix = key.split("\\.")[1];
-            if (prefix.equals(givenPrefix)) {
-                result.put(suffix, get(key));
+        for (String key : properties.keySet()) {
+            String[] parts = key.split("\\.", 2); // Split only once
+            if (parts.length == 2 && parts[0].equals(givenPrefix)) {
+                result.put(parts[1], properties.get(key));
             }
         }
         return result;
@@ -43,50 +39,24 @@ public class WindowPropertyMap extends AbstractMap<String, Integer> {
      */
     public void addWithPrefix(String prefix, Map<String, Integer> map) {
         for (Map.Entry<String, Integer> entry : map.entrySet()) {
-            put(prefix + "." + entry.getKey(),
-                    entry.getValue());
+            properties.put(prefix + "." + entry.getKey(), entry.getValue());
         }
     }
 
+    @Override
+    public Set<Entry<String, Integer>> entrySet() {
+        return properties.entrySet();
+    }
 
     @Override
     public Integer put(String key, Integer value) {
-        table.add(new Entry1(key, value));
-        return value;
+        return properties.put(key, value);
     }
 
-    private static class Entry1 implements Map.Entry<String, Integer> {
-        private final String key;
-        private Integer value;
-
-        public Entry1(String key, Integer value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        @Override
-        public String getKey() {
-            return key;
-        }
-
-        @Override
-        public Integer getValue() {
-            return value;
-        }
-
-        @Override
-        public Integer setValue(Integer value) {
-            Integer oldValue = this.value;
-            this.value = value;
-            return oldValue;
-        }
-
-        @Override
-        public String toString() {
-            return "Entry1{" +
-                    "key='" + key + '\'' +
-                    ", value=" + value +
-                    '}';
-        }
+    @Override
+    public String toString() {
+        return "WindowPropertyMap{" +
+                "properties=" + properties +
+                '}';
     }
 }
