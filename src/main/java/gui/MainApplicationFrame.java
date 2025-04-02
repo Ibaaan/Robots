@@ -1,25 +1,26 @@
 package gui;
 
 import log.Logger;
-import state.SaveLoadState;
+import state.HasState;
 import state.WindowStateManager;
-import state.WindowStateUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Arrays;
 import java.util.List;
-import java.util.*;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
-public class MainApplicationFrame extends JFrame implements SaveLoadState {
+public class MainApplicationFrame extends JFrame implements HasState {
     private final JDesktopPane desktopPane = new JDesktopPane();
     private final Locale locale;
     private final WindowStateManager windowStateManager;
 
-    private final List<SaveLoadState> windows;
+    private final List<HasState> windows;
 
     public MainApplicationFrame() {
         windowStateManager = new WindowStateManager();
@@ -53,10 +54,10 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
     /**
      * Возвращает все SaveLoadState окна, включая MainApplicationFrame
      */
-    private List<SaveLoadState> getSaveLoadStateWindows() {
-        List<SaveLoadState> windows = Arrays.stream(getContentPane().getComponents())
-                .filter(component -> component instanceof SaveLoadState)
-                .map(component -> (SaveLoadState) component)
+    private List<HasState> getSaveLoadStateWindows() {
+        List<HasState> windows = Arrays.stream(getContentPane().getComponents())
+                .filter(component -> component instanceof HasState)
+                .map(component -> (HasState) component)
                 .collect(Collectors.toList());
         windows.add(this);
         return windows;
@@ -191,17 +192,7 @@ public class MainApplicationFrame extends JFrame implements SaveLoadState {
 
 
     @Override
-    public String getFName() {
+    public String getWindowName() {
         return "main";
-    }
-
-    @Override
-    public void loadState(Map<String, Integer> parametres) {
-        WindowStateUtils.setParameters(this, parametres);
-    }
-
-    @Override
-    public Map<String, Integer> saveState() {
-        return WindowStateUtils.getParameters(this);
     }
 }

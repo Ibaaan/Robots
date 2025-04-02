@@ -1,13 +1,11 @@
 package gui;
 
-import state.SaveLoadState;
-import state.WindowStateUtils;
+import state.HasState;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Map;
 
-public class GameWindow extends JInternalFrame implements SaveLoadState {
+public class GameWindow extends JInternalFrame implements HasState {
     private static final Integer DEFAULT_WIDTH = 400;
     private static final Integer DEFAULT_HEIGHT = 400;
 
@@ -22,17 +20,7 @@ public class GameWindow extends JInternalFrame implements SaveLoadState {
     }
 
     @Override
-    public void loadState(Map<String, Integer> parametres) {
-        WindowStateUtils.setParameters(this, parametres);
-    }
-
-    @Override
-    public Map<String, Integer> saveState() {
-        return WindowStateUtils.getParameters(this);
-    }
-
-    @Override
-    public String getFName() {
+    public String getWindowName() {
         return "game";
     }
 }
