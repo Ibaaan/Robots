@@ -1,49 +1,73 @@
 package gui;
 
 import log.Logger;
+import state.HasState;
+import state.WindowStateManager;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
-public class MainApplicationFrame extends JFrame {
+public class MainApplicationFrame extends JFrame implements HasState {
     private final JDesktopPane desktopPane = new JDesktopPane();
-    private Locale locale;
+    private final Locale locale;
+    private final WindowStateManager windowStateManager;
+
+    private final List<HasState> windows;
 
     public MainApplicationFrame() {
-        locale = Locale.of("ru", "RUS");
-        //Make the big window be indented 50 pixels from each edge
-        //of the screen.
+        windowStateManager = new WindowStateManager();
+
         int inset = 50;
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setBounds(inset, inset, screenSize.width - inset * 2,
                 screenSize.height - inset * 2);
 
-        setContentPane(desktopPane);
-
-
-        LogWindow logWindow = createLogWindow();
-        addWindow(logWindow);
-
+        locale = Locale.forLanguageTag("ru-RU");
 
         addWindow(new GameWindow());
+        addWindow(new LogWindow());
 
-        setJMenuBar(generateMenuBar());
+        setContentPane(desktopPane);
+        setJMenuBar(createMenuBar());
+
+        windows = getSaveLoadStateWindows();
+        windowStateManager.recoverWindows(windows);
 
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                closeMainApplicationFrame(e);
+                onWindowClosingEvent(e);
+
             }
         });
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
     }
 
-    private void closeMainApplicationFrame(WindowEvent e) {
+    /**
+     * Возвращает все SaveLoadState окна, включая MainApplicationFrame
+     */
+    private List<HasState> getSaveLoadStateWindows() {
+        List<HasState> windows = Arrays.stream(getContentPane().getComponents())
+                .filter(component -> component instanceof HasState)
+                .map(component -> (HasState) component)
+                .collect(Collectors.toList());
+        windows.add(this);
+        return windows;
+    }
+
+    /**
+     * Обработка выхода из приложения,
+     * создание диалогового окна
+     */
+    private void onWindowClosingEvent(WindowEvent e) {
         ResourceBundle rb = ResourceBundle.getBundle(
                 "localization/JOptionPane", locale);
         Object[] options = {rb.getString("Yes"), rb.getString("No")};
@@ -54,28 +78,18 @@ public class MainApplicationFrame extends JFrame {
                 JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null, options, options[0]);
-        if (option == 0) {
+        if (option == JOptionPane.YES_OPTION) {
+            setVisible(false);
+            windowStateManager.saveWindows(windows);
             dispose();
             System.exit(0);
         }
-
     }
 
-    protected LogWindow createLogWindow() {
-        LogWindow logWindow = new LogWindow(Logger.getDefaultLogSource());
-        logWindow.setLocation(10, 10);
-        logWindow.setSize(300, 800);
-        setMinimumSize(logWindow.getSize());
-        logWindow.pack();
-        Logger.debug("Протокол работает");
-        return logWindow;
-    }
-
-    protected void addWindow(JInternalFrame frame) {
+    protected void addWindow(Component frame) {
         desktopPane.add(frame);
         frame.setVisible(true);
     }
-
 
     /**
      * Создаёт меню - 'Режим отображения'
@@ -158,7 +172,7 @@ public class MainApplicationFrame extends JFrame {
         return addLogMessageItem;
     }
 
-    private JMenuBar generateMenuBar() {
+    private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(createExitMenu());
         menuBar.add(createLookAndFeelMenu());
@@ -174,5 +188,11 @@ public class MainApplicationFrame extends JFrame {
                  UnsupportedLookAndFeelException e) {
             // just ignore
         }
+    }
+
+
+    @Override
+    public String getWindowName() {
+        return "main";
     }
 }
