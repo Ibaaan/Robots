@@ -4,6 +4,9 @@ import java.awt.*;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * Провоцирует изменение модели
+ */
 public class GameController {
     private final GameModel model;
 
@@ -13,12 +16,17 @@ public class GameController {
         m_timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                model.onModelUpdateEvent();
+                model.updateRobotPosition();
             }
         }, 0, 10);
     }
 
-    public void setTargetPosition(Point point) {
-        model.setTargetPosition(point);
+    /**
+     * Устанавливает новую конечную точку
+     *
+     * @param point Точка(x, y)
+     */
+    public void updateTargetPosition(Point point) {
+        model.setTargetPosition(point.x, point.y);
     }
 }

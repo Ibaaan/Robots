@@ -19,7 +19,7 @@ public class GameVisualizer extends JPanel implements PropertyChangeListener {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                controller.setTargetPosition(e.getPoint());
+                controller.updateTargetPosition(e.getPoint());
             }
         });
         setDoubleBuffered(true);
@@ -49,10 +49,9 @@ public class GameVisualizer extends JPanel implements PropertyChangeListener {
         g.drawOval(centerX - diam1 / 2, centerY - diam2 / 2, diam1, diam2);
     }
 
-    private void drawRobot(Graphics2D g, int x, int y, double direction) {
-        int robotCenterX = model.getRobotX();
-        int robotCenterY = model.getRobotY();
-        AffineTransform t = AffineTransform.getRotateInstance(direction, robotCenterX, robotCenterY);
+    private void drawRobot(Graphics2D g, int robotCenterX, int robotCenterY, double direction) {
+        AffineTransform t = AffineTransform.getRotateInstance(direction,
+                robotCenterX, robotCenterY);
         g.setTransform(t);
         g.setColor(Color.MAGENTA);
         fillOval(g, robotCenterX, robotCenterY, 30, 10);

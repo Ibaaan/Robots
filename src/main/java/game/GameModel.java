@@ -1,6 +1,5 @@
 package game;
 
-import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
@@ -8,16 +7,18 @@ import java.beans.PropertyChangeSupport;
  * Модель описывающая движение робота к цели
  */
 public class GameModel {
-    private static final String PROPERTY_NAME = "model";
-    private volatile double m_robotPositionX = 100;
-    private volatile double m_robotPositionY = 100;
-    private volatile double m_robotDirection = 0;
+    public static final String ROBOT_POSITION_UPDATED = "ROBOT_POSITION_UPDATED";
+    public static final String TARGET_POSITION_UPDATED = "TARGET_POSITION_UPDATED";
 
-    private volatile int m_targetPositionX = 150;
-    private volatile int m_targetPositionY = 100;
+    private volatile double robotPositionX = 100;
+    private volatile double robotPositionY = 100;
+    private volatile double robotDirection = 0;
 
-    private static final double maxVelocity = 0.1;
-    private static final double maxAngularVelocity = 0.001;
+    private volatile int targetPositionX = 150;
+    private volatile int targetPositionY = 100;
+
+    private static final double MAX_VELOCITY = 0.1;
+    private static final double MAX_ANGULAR_VELOCITY = 0.001;
 
     private final PropertyChangeSupport propChangeDispatcher =
             new PropertyChangeSupport(this);
@@ -36,28 +37,31 @@ public class GameModel {
         return asNormalizedRadians(Math.atan2(diffY, diffX));
     }
 
-    public void onModelUpdateEvent() {
-        double distance = distance(m_targetPositionX, m_targetPositionY,
-                m_robotPositionX, m_robotPositionY);
+    /**
+     * Двигает робота (изменяет его координаты)
+     */
+    public void updateRobotPosition() {
+        double distance = distance(targetPositionX, targetPositionY,
+                robotPositionX, robotPositionY);
         if (distance < 0.5) {
             return;
         }
-        double velocity = maxVelocity;
-        double angleToTarget = angleTo(m_robotPositionX, m_robotPositionY,
-                m_targetPositionX, m_targetPositionY);
+        double velocity = MAX_VELOCITY;
+        double angleToTarget = angleTo(robotPositionX, robotPositionY,
+                targetPositionX, targetPositionY);
         double angularVelocity = 0;
-        if ((angleToTarget - m_robotDirection > 0 &&
-                angleToTarget - m_robotDirection < Math.PI)
+        if ((angleToTarget - robotDirection > 0 &&
+                angleToTarget - robotDirection < Math.PI)
                 |
-                (angleToTarget - m_robotDirection > -2 * Math.PI &&
-                        angleToTarget - m_robotDirection < -Math.PI)) {
-            angularVelocity = maxAngularVelocity;
-        } else if ((angleToTarget - m_robotDirection < 0 &&
-                angleToTarget - m_robotDirection > -Math.PI)
+                (angleToTarget - robotDirection > -2 * Math.PI &&
+                        angleToTarget - robotDirection < -Math.PI)) {
+            angularVelocity = MAX_ANGULAR_VELOCITY;
+        } else if ((angleToTarget - robotDirection < 0 &&
+                angleToTarget - robotDirection > -Math.PI)
                 |
-                (angleToTarget - m_robotDirection < 2 * Math.PI &&
-                        angleToTarget - m_robotDirection > Math.PI)) {
-            angularVelocity = -maxAngularVelocity;
+                (angleToTarget - robotDirection < 2 * Math.PI &&
+                        angleToTarget - robotDirection > Math.PI)) {
+            angularVelocity = -MAX_ANGULAR_VELOCITY;
         }
 
         if (oppositeIfBug(velocity, angularVelocity)) {
@@ -65,7 +69,7 @@ public class GameModel {
         }
 
         moveRobot(velocity, angularVelocity, 10);
-        propChangeDispatcher.firePropertyChange(PROPERTY_NAME, true, false);
+        propChangeDispatcher.firePropertyChange(ROBOT_POSITION_UPDATED, null, null);
     }
 
     /**
@@ -77,17 +81,17 @@ public class GameModel {
         double radiusTrajCircle = (velocity / angularVelocity);
 
         double diffXFromTargetTo1Center =
-                m_robotPositionX - radiusTrajCircle *
-                        Math.sin(m_robotDirection) - m_targetPositionX;
+                robotPositionX - radiusTrajCircle *
+                        Math.sin(robotDirection) - targetPositionX;
         double diffXFromTargetTo2Center =
-                m_robotPositionX + radiusTrajCircle *
-                        Math.sin(m_robotDirection) - m_targetPositionX;
+                robotPositionX + radiusTrajCircle *
+                        Math.sin(robotDirection) - targetPositionX;
         double diffYFromTargetTo1Center =
-                m_robotPositionY + radiusTrajCircle *
-                        Math.cos(m_robotDirection) - m_targetPositionY;
+                robotPositionY + radiusTrajCircle *
+                        Math.cos(robotDirection) - targetPositionY;
         double diffYFromTargetTo2Center =
-                m_robotPositionY - radiusTrajCircle *
-                        Math.cos(m_robotDirection) - m_targetPositionY;
+                robotPositionY - radiusTrajCircle *
+                        Math.cos(robotDirection) - targetPositionY;
 
         return diffXFromTargetTo1Center * diffXFromTargetTo1Center +
                 diffYFromTargetTo1Center * diffYFromTargetTo1Center <
@@ -106,25 +110,25 @@ public class GameModel {
     }
 
     private void moveRobot(double velocity, double angularVelocity, double duration) {
-        velocity = applyLimits(velocity, 0, maxVelocity);
-        angularVelocity = applyLimits(angularVelocity, -maxAngularVelocity, maxAngularVelocity);
-        double newX = m_robotPositionX + velocity / angularVelocity *
-                (Math.sin(m_robotDirection + angularVelocity * duration) -
-                        Math.sin(m_robotDirection));
+        velocity = applyLimits(velocity, 0, MAX_VELOCITY);
+        angularVelocity = applyLimits(angularVelocity, -MAX_ANGULAR_VELOCITY, MAX_ANGULAR_VELOCITY);
+        double newX = robotPositionX + velocity / angularVelocity *
+                (Math.sin(robotDirection + angularVelocity * duration) -
+                        Math.sin(robotDirection));
         if (!Double.isFinite(newX)) {
-            newX = m_robotPositionX + velocity * duration * Math.cos(m_robotDirection);
+            newX = robotPositionX + velocity * duration * Math.cos(robotDirection);
         }
-        double newY = m_robotPositionY - velocity / angularVelocity *
-                (Math.cos(m_robotDirection + angularVelocity * duration) -
-                        Math.cos(m_robotDirection));
+        double newY = robotPositionY - velocity / angularVelocity *
+                (Math.cos(robotDirection + angularVelocity * duration) -
+                        Math.cos(robotDirection));
         if (!Double.isFinite(newY)) {
-            newY = m_robotPositionY + velocity * duration * Math.sin(m_robotDirection);
+            newY = robotPositionY + velocity * duration * Math.sin(robotDirection);
         }
 
-        m_robotPositionX = newX;
-        m_robotPositionY = newY;
-        double newDirection = asNormalizedRadians(m_robotDirection + angularVelocity * duration);
-        m_robotDirection = newDirection;
+        robotPositionX = newX;
+        robotPositionY = newY;
+        double newDirection = asNormalizedRadians(robotDirection + angularVelocity * duration);
+        robotDirection = newDirection;
     }
 
     private int round(double value) {
@@ -142,32 +146,32 @@ public class GameModel {
     }
 
     public int getRobotX() {
-        return round(m_robotPositionX);
+        return round(robotPositionX);
     }
 
     public int getRobotY() {
-        return round(m_robotPositionY);
+        return round(robotPositionY);
     }
 
     public int getTargetX() {
-        return m_targetPositionX;
+        return targetPositionX;
     }
 
     public int getTargetY() {
-        return m_targetPositionY;
+        return targetPositionY;
     }
 
-    public void setTargetPosition(Point p) {
-        m_targetPositionX = p.x;
-        m_targetPositionY = p.y;
-        propChangeDispatcher.firePropertyChange(PROPERTY_NAME, true, false);
+    public void setTargetPosition(int x, int y) {
+        targetPositionX = x;
+        targetPositionY = y;
+        propChangeDispatcher.firePropertyChange(TARGET_POSITION_UPDATED, null, null);
     }
 
     public double getDirection() {
-        return m_robotDirection;
+        return robotDirection;
     }
 
     public void addTextChangeListener(PropertyChangeListener listener) {
-        propChangeDispatcher.addPropertyChangeListener(PROPERTY_NAME, listener);
+        propChangeDispatcher.addPropertyChangeListener(ROBOT_POSITION_UPDATED, listener);
     }
 }

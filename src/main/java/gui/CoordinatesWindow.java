@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Objects;
 
 /**
  * Окно с координатами робота
@@ -41,8 +42,10 @@ public class CoordinatesWindow extends JInternalFrame implements HasState, Prope
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        robotCoordinates = "X:" + model.getRobotX() + ", Y:" + model.getRobotY();
-        content.setText(robotCoordinates);
-        repaint();
+        if (Objects.equals(evt.getPropertyName(), GameModel.ROBOT_POSITION_UPDATED)) {
+            robotCoordinates = "X:" + model.getRobotX() + ", Y:" + model.getRobotY();
+            content.setText(robotCoordinates);
+            repaint();
+        }
     }
 }
