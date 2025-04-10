@@ -1,5 +1,6 @@
 package gui;
 
+import game.GameModel;
 import log.Logger;
 import state.HasState;
 import state.WindowStateManager;
@@ -19,12 +20,11 @@ public class MainApplicationFrame extends JFrame implements HasState {
     private final JDesktopPane desktopPane = new JDesktopPane();
     private final Locale locale;
     private final WindowStateManager windowStateManager;
-
     private final List<HasState> windows;
 
     public MainApplicationFrame() {
         windowStateManager = new WindowStateManager();
-
+        GameModel model = new GameModel();
         int inset = 50;
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setBounds(inset, inset, screenSize.width - inset * 2,
@@ -32,8 +32,9 @@ public class MainApplicationFrame extends JFrame implements HasState {
 
         locale = Locale.forLanguageTag("ru-RU");
 
-        addWindow(new GameWindow());
+        addWindow(new GameWindow(model));
         addWindow(new LogWindow());
+        addWindow(new CoordinatesWindow(model));
 
         setContentPane(desktopPane);
         setJMenuBar(createMenuBar());
