@@ -26,10 +26,6 @@ public class GameVisualizer extends JPanel implements PropertyChangeListener {
         model.addTextChangeListener(this);
     }
 
-    public void onRedrawEvent() {
-        EventQueue.invokeLater(this::repaint);
-    }
-
     @Override
     public void paint(Graphics g) {
         super.paint(g);
@@ -74,6 +70,6 @@ public class GameVisualizer extends JPanel implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        onRedrawEvent();
+        repaint();
     }
 }
