@@ -17,12 +17,12 @@ public class LogsList<T> extends AbstractList<T> {
     }
 
     @Override
-    public int size() {
+    public synchronized int size() {
         return deque.size();
     }
 
     @Override
-    public boolean add(T t) {
+    public synchronized boolean add(T t) {
         if (deque.size() >= length) {
             deque.pollFirst();
         }
@@ -30,12 +30,12 @@ public class LogsList<T> extends AbstractList<T> {
     }
 
     @Override
-    public T get(int index) {
+    public synchronized T get(int index) {
         return deque.stream().toList().get(index);
     }
 
     @Override
-    public List<T> subList(int fromIndex, int toIndex) {
+    public synchronized List<T> subList(int fromIndex, int toIndex) {
         if (fromIndex < 0 || toIndex > size() || fromIndex > toIndex) {
             throw new IndexOutOfBoundsException("fromIndex: " + fromIndex +
                     ", toIndex: " + toIndex);
@@ -44,7 +44,7 @@ public class LogsList<T> extends AbstractList<T> {
     }
 
     @Override
-    public Iterator<T> iterator() {
+    public synchronized Iterator<T> iterator() {
         return new ArrayList<>(deque).iterator();
     }
 }
