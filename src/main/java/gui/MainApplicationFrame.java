@@ -158,19 +158,21 @@ public class MainApplicationFrame extends JFrame implements HasState {
         testMenu.setMnemonic(KeyEvent.VK_T);
         testMenu.getAccessibleContext().setAccessibleDescription("Тестовые команды");
 
-        testMenu.add(createAddLogMessageItem());
+        testMenu.add(createAddLogMessageItem("Новая строка"));
+        testMenu.add(createAddLogMessageItem("Другая строка"));
         return testMenu;
 
     }
 
-    private JMenuItem createAddLogMessageItem() {
+    private JMenuItem createAddLogMessageItem(String text) {
         JMenuItem addLogMessageItem = new JMenuItem(
-                "Сообщение в лог", KeyEvent.VK_S);
+                text + " в лог", KeyEvent.VK_S);
         addLogMessageItem.addActionListener((event) ->
-                Logger.debug("Новая строка"));
+                Logger.debug(text));
 
         return addLogMessageItem;
     }
+
 
     private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
