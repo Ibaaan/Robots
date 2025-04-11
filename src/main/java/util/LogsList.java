@@ -13,38 +13,46 @@ public class LogsList<T> extends AbstractList<T> {
 
     public LogsList(int length) {
         this.length = length;
-        deque = new ArrayDeque<>();
+        deque = new ArrayDeque<>(length);
     }
 
     @Override
-    public synchronized int size() {
-        return deque.size();
-    }
-
-    @Override
-    public synchronized boolean add(T t) {
-        if (deque.size() >= length) {
-            deque.pollFirst();
+    public int size() {
+        synchronized (deque) {
+            return deque.size();
         }
-        return deque.add(t);
     }
 
     @Override
-    public synchronized T get(int index) {
-        return deque.stream().toList().get(index);
-    }
-
-    @Override
-    public synchronized List<T> subList(int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex > size() || fromIndex > toIndex) {
-            throw new IndexOutOfBoundsException("fromIndex: " + fromIndex +
-                    ", toIndex: " + toIndex);
+    public boolean add(T t) {
+        synchronized (deque) {
+            while (deque.size() >= length) {
+                deque.pollFirst();
+            }
+            return deque.add(t);
         }
-        return deque.stream().toList().subList(fromIndex, toIndex);
     }
 
     @Override
-    public synchronized Iterator<T> iterator() {
-        return new ArrayList<>(deque).iterator();
+    public T get(int index) {
+        synchronized (deque) {
+            return deque.stream().toList().get(index);
+        }
+    }
+
+    @Override
+    public List<T> subList(int fromIndex, int toIndex) {
+        synchronized (deque) {
+            return deque.stream().toList().subList(fromIndex, toIndex);
+        }
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        Iterator<T> syncIterator;
+        synchronized (deque) {
+            syncIterator = deque.iterator();
+        }
+        return syncIterator;
     }
 }
