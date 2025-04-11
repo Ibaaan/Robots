@@ -1,5 +1,6 @@
 package gui;
 
+import game.GameModel;
 import log.Logger;
 import state.HasState;
 import state.WindowStateManager;
@@ -19,12 +20,11 @@ public class MainApplicationFrame extends JFrame implements HasState {
     private final JDesktopPane desktopPane = new JDesktopPane();
     private final Locale locale;
     private final WindowStateManager windowStateManager;
-
     private final List<HasState> windows;
 
     public MainApplicationFrame() {
         windowStateManager = new WindowStateManager();
-
+        GameModel model = new GameModel();
         int inset = 50;
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setBounds(inset, inset, screenSize.width - inset * 2,
@@ -32,8 +32,9 @@ public class MainApplicationFrame extends JFrame implements HasState {
 
         locale = Locale.forLanguageTag("ru-RU");
 
-        addWindow(new GameWindow());
+        addWindow(new GameWindow(model));
         addWindow(new LogWindow());
+        addWindow(new CoordinatesWindow(model));
 
         setContentPane(desktopPane);
         setJMenuBar(createMenuBar());
@@ -158,19 +159,21 @@ public class MainApplicationFrame extends JFrame implements HasState {
         testMenu.setMnemonic(KeyEvent.VK_T);
         testMenu.getAccessibleContext().setAccessibleDescription("Тестовые команды");
 
-        testMenu.add(createAddLogMessageItem());
+        testMenu.add(createAddLogMessageItem("Новая строка"));
+        testMenu.add(createAddLogMessageItem("Другая строка"));
         return testMenu;
 
     }
 
-    private JMenuItem createAddLogMessageItem() {
+    private JMenuItem createAddLogMessageItem(String text) {
         JMenuItem addLogMessageItem = new JMenuItem(
-                "Сообщение в лог", KeyEvent.VK_S);
+                text + " в лог", KeyEvent.VK_S);
         addLogMessageItem.addActionListener((event) ->
-                Logger.debug("Новая строка"));
+                Logger.debug(text));
 
         return addLogMessageItem;
     }
+
 
     private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
