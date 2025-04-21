@@ -12,7 +12,6 @@ import java.util.List;
  */
 public class WeakArrayList<T> extends AbstractList<T> {
     private final List<WeakReference<T>> items;
-    private boolean needsCleanup = false;
 
     public WeakArrayList() {
         items = new ArrayList<>();
@@ -27,19 +26,17 @@ public class WeakArrayList<T> extends AbstractList<T> {
 
     @Override
     public T get(int index) {
-        cleanUp();
         return items.get(index).get();
     }
 
     @Override
     public int size() {
-        cleanUp();
         return items.size();
     }
 
     @Override
     public boolean add(T t) {
-        needsCleanup = true;
+        cleanUp();
         return items.add(new WeakReference<>(t));
     }
 
@@ -47,9 +44,18 @@ public class WeakArrayList<T> extends AbstractList<T> {
      * Очищает items от null элементов
      */
     private void cleanUp() {
-        if (needsCleanup) {
-            items.removeIf(ref -> ref.get() == null);
-            needsCleanup = false;
+        items.removeIf(ref -> ref.get() == null);
+    }
+
+    @Override
+    public boolean remove(Object o) {
+        cleanUp();
+        for (WeakReference<T> item : items) {
+            if (item.get() == o) {
+                items.remove(item);
+                return true;
+            }
         }
+        return false;
     }
 }
