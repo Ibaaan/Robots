@@ -1,6 +1,7 @@
 package gui;
 
 import game.GameModel;
+import i18n.LocalizationManager;
 import log.Logger;
 import state.HasState;
 import state.WindowStateManager;
@@ -12,13 +13,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 public class MainApplicationFrame extends JFrame implements HasState {
     private final JDesktopPane desktopPane = new JDesktopPane();
-    private final Locale locale;
     private final WindowStateManager windowStateManager;
     private final List<HasState> windows;
 
@@ -29,8 +27,6 @@ public class MainApplicationFrame extends JFrame implements HasState {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setBounds(inset, inset, screenSize.width - inset * 2,
                 screenSize.height - inset * 2);
-
-        locale = Locale.forLanguageTag("ru-RU");
 
         addWindow(new GameWindow(model));
         addWindow(new LogWindow());
@@ -46,7 +42,6 @@ public class MainApplicationFrame extends JFrame implements HasState {
             @Override
             public void windowClosing(WindowEvent e) {
                 onWindowClosingEvent(e);
-
             }
         });
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -69,13 +64,13 @@ public class MainApplicationFrame extends JFrame implements HasState {
      * создание диалогового окна
      */
     private void onWindowClosingEvent(WindowEvent e) {
-        ResourceBundle rb = ResourceBundle.getBundle(
-                "localization/JOptionPane", locale);
-        Object[] options = {rb.getString("Yes"), rb.getString("No")};
+        LocalizationManager localizationManager = LocalizationManager.getInstance();
+        Object[] options = {localizationManager.getLocalizedMessage("Yes"),
+                localizationManager.getLocalizedMessage("No")};
         int option = JOptionPane.showOptionDialog(
                 e.getWindow(),
-                rb.getString("ExitConfirm"),
-                "Панельная выходка",
+                localizationManager.getLocalizedMessage("ExitConfirm"),
+                localizationManager.getLocalizedMessage("ExitTitle"),
                 JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null, options, options[0]);
@@ -178,7 +173,27 @@ public class MainApplicationFrame extends JFrame implements HasState {
         menuBar.add(createExitMenu());
         menuBar.add(createLookAndFeelMenu());
         menuBar.add(createTestMenu());
+        menuBar.add(createLocalizationMenu());
         return menuBar;
+    }
+
+    private JMenu createLocalizationMenu() {
+        JMenu langChangeMenu = new JMenu(LocalizationManager.getInstance().getLocalizedMessage("LangChange"));
+
+
+        langChangeMenu.add(createLangItem("ru"));
+        langChangeMenu.add(createLangItem("en"));
+        return langChangeMenu;
+    }
+
+    private JMenuItem createLangItem(String langAcronym) {
+        String langName = LocalizationManager.getInstance().getLocalizedMessage("LangName", langAcronym);
+        JMenuItem langItem = new JMenuItem(
+                langName);
+        langItem.addActionListener((event) ->
+                LocalizationManager.getInstance().changeLanguageTo(langAcronym));
+
+        return langItem;
     }
 
     private void setLookAndFeel(String className) {
