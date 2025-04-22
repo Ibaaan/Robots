@@ -1,5 +1,7 @@
 package state;
 
+import i18n.LocalizationManager;
+
 import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyVetoException;
@@ -16,6 +18,7 @@ public class WindowStateManager {
     private static final Logger LOGGER = Logger.getLogger(WindowStateManager.class.getName());
     private static final Integer DEFAULT_MAX_SIZE = 1;
     private final FileStateManager fileStateManager;
+    private final LocalizationManager localizationManager = LocalizationManager.getInstance();
 
     public WindowStateManager() {
         this.fileStateManager = new FileStateManager();
@@ -25,7 +28,22 @@ public class WindowStateManager {
      * Восстанавливает свойства окон
      */
     public void recoverWindows(List<HasState> windows) {
-        WindowPropertyMap windowsProperties = new WindowPropertyMap(fileStateManager.getAllProperties());
+        WindowPropertyMap windowsProperties = new WindowPropertyMap();
+
+        Map<String, String> properties = fileStateManager.getAllProperties();
+        for (String key : properties.keySet()) {
+            if (key.equals(LocalizationManager.NAME)) {
+                localizationManager.changeLanguageTo(properties.get(key));
+                continue;
+            }
+            try {
+                windowsProperties.put(key,
+                        Integer.parseInt(properties.get(key)));
+            } catch (NumberFormatException e) {
+                LOGGER.log(Level.WARNING, "Значение по ключу " + key +
+                        " не является числом", e);
+            }
+        }
 
         for (HasState window : windows) {
             Map<String, Integer> props =
@@ -43,10 +61,23 @@ public class WindowStateManager {
     public void saveWindows(List<HasState> windows) {
         WindowPropertyMap windowPropertyMap = new WindowPropertyMap();
         for (HasState window : windows) {
-            windowPropertyMap.addWithPrefix(window.getWindowName(),
+            windowPropertyMap.addWithPrefix(
+                    window.getWindowName(),
                     getParameters((Component) window));
         }
-        fileStateManager.save(windowPropertyMap);
+        fileStateManager.save(formGeneralPropertyMap(windowPropertyMap));
+    }
+
+    /**
+     * Объединят свойства окон с другими свойствами
+     *
+     * @param windowPropertyMap Свойства окон
+     * @return Map<String, String> со всеми свойствами
+     */
+    private Map<String, String> formGeneralPropertyMap(WindowPropertyMap windowPropertyMap) {
+        Map<String, String> result = windowPropertyMap.convertValuesToString();
+        result.put(LocalizationManager.NAME, localizationManager.getLanguage());
+        return result;
     }
 
     /**
