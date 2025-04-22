@@ -1,6 +1,7 @@
 package gui;
 
 import game.GameModel;
+import i18n.LocalizationManager;
 import log.Logger;
 import state.HasState;
 import state.WindowStateManager;
@@ -169,19 +170,24 @@ public class MainApplicationFrame extends JFrame implements HasState, PropertyCh
                         .getLocalizedMessage("TestMenuDescription")
         );
 
-        testMenu.add(createAddLogMessageItem("Новая строка"));
-        testMenu.add(createAddLogMessageItem("Другая строка"));
+        String testLogMessage1 = LocalizationManager.getInstance()
+                .getLocalizedMessage("TestLogMessage1");
+        String testLogMessage2 = LocalizationManager.getInstance()
+                .getLocalizedMessage("TestLogMessage2");
+
+
+        testMenu.add(createAddLogMessageItem(testLogMessage1));
+        testMenu.add(createAddLogMessageItem(testLogMessage2));
         return testMenu;
 
     }
 
-    private JMenuItem createAddLogMessageItem(String text) {
-        JMenuItem addLogMessageItem = new JMenuItem(
-                LocalizationManager.getInstance().getLocalizedMessage("LogMessageItem"),
-                KeyEvent.VK_S);
-                text + " в лог", KeyEvent.VK_S);
+    private JMenuItem createAddLogMessageItem(String logText) {
+        String addedText = LocalizationManager.getInstance()
+                .getLocalizedMessage("LogMessagePattern", (Object) logText);
+        JMenuItem addLogMessageItem = new JMenuItem(logText, KeyEvent.VK_S);
         addLogMessageItem.addActionListener((event) ->
-                Logger.debug(text));
+                Logger.debug(addedText));
 
         return addLogMessageItem;
     }

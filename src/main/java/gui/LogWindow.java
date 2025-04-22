@@ -29,7 +29,8 @@ public class LogWindow extends JInternalFrame
         panel.add(m_logContent, BorderLayout.CENTER);
         getContentPane().add(panel);
         updateLogContent();
-        Logger.debug("Протокол работает");
+        Logger.debug(LocalizationManager.getInstance()
+                .getLocalizedMessage("LogWindowActivated"));
         setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
         setLocation(DEFAULT_X, DEFAULT_Y);
         setDefaultCloseOperation(HIDE_ON_CLOSE);

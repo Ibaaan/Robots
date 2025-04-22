@@ -53,6 +53,14 @@ public class LocalizationManager {
     /**
      * Возвращает локализованное сообщение для указанного ключа и языка
      */
+    public String getLocalizedMessage(String key, Object... arguments) {
+        return getLocalizedMessage(key, language, arguments);
+    }
+
+    /**
+     * Возвращает локализованное сообщение для указанного ключа используя текущий язык,
+     * форматируя его с помощью предоставленных аргументов
+     */
     public String getLocalizedMessage(String key, String language) {
         return getLocalizedMessage(key, language, new Object[]{});
     }
