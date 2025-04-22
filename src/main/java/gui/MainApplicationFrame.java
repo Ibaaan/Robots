@@ -11,11 +11,13 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MainApplicationFrame extends JFrame implements HasState {
+public class MainApplicationFrame extends JFrame implements HasState, PropertyChangeListener {
     private final JDesktopPane desktopPane = new JDesktopPane();
     private final WindowStateManager windowStateManager;
     private final List<HasState> windows;
@@ -31,12 +33,12 @@ public class MainApplicationFrame extends JFrame implements HasState {
         addWindow(new GameWindow(model));
         addWindow(new LogWindow());
         addWindow(new CoordinatesWindow(model));
-
         setContentPane(desktopPane);
-        setJMenuBar(createMenuBar());
 
         windows = getSaveLoadStateWindows();
         windowStateManager.recoverWindows(windows);
+
+        setJMenuBar(createMenuBar());
 
         addWindowListener(new WindowAdapter() {
             @Override
@@ -45,6 +47,8 @@ public class MainApplicationFrame extends JFrame implements HasState {
             }
         });
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+
+        LocalizationManager.getInstance().addPropertyChangeListener(this);
     }
 
     /**
@@ -91,10 +95,12 @@ public class MainApplicationFrame extends JFrame implements HasState {
      * Создаёт меню - 'Режим отображения'
      */
     private JMenu createLookAndFeelMenu() {
-        JMenu lookAndFeelMenu = new JMenu("Режим отображения");
+        JMenu lookAndFeelMenu = new JMenu(
+                LocalizationManager.getInstance().getLocalizedMessage("DisplayMode"));
         lookAndFeelMenu.setMnemonic(KeyEvent.VK_V);
         lookAndFeelMenu.getAccessibleContext().
-                setAccessibleDescription("Управление режимом отображения приложения");
+                setAccessibleDescription(LocalizationManager.getInstance()
+                        .getLocalizedMessage("DisplayModeDescription"));
 
         lookAndFeelMenu.add(createSystemLookAndFeelItem());
         lookAndFeelMenu.add(createCrossPlatformLookAndFeelItem());
@@ -104,7 +110,9 @@ public class MainApplicationFrame extends JFrame implements HasState {
 
     private JMenuItem createCrossPlatformLookAndFeelItem() {
         JMenuItem crossPlatformLookAndFeelItem = new JMenuItem(
-                "Универсальная схема", KeyEvent.VK_S);
+                LocalizationManager.getInstance()
+                        .getLocalizedMessage("CrossPlatformLookAndFeelItem"),
+                KeyEvent.VK_S);
         crossPlatformLookAndFeelItem.addActionListener((event) -> {
             setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
             this.invalidate();
@@ -114,7 +122,8 @@ public class MainApplicationFrame extends JFrame implements HasState {
 
     private JMenuItem createSystemLookAndFeelItem() {
         JMenuItem systemLookAndFeelItem = new JMenuItem(
-                "Системная схема", KeyEvent.VK_S);
+                LocalizationManager.getInstance().getLocalizedMessage("SystemLookAndFeelItem"),
+                KeyEvent.VK_S);
         systemLookAndFeelItem.addActionListener((event) -> {
             setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             this.invalidate();
@@ -126,7 +135,8 @@ public class MainApplicationFrame extends JFrame implements HasState {
      * Создаёт меню - "Выход"
      */
     private JMenu createExitMenu() {
-        JMenu exitMenu = new JMenu("Выход");
+        JMenu exitMenu = new JMenu(
+                LocalizationManager.getInstance().getLocalizedMessage("ExitMenu"));
         exitMenu.setMnemonic(KeyEvent.VK_A);
 
         exitMenu.add(createExitItem());
@@ -138,7 +148,8 @@ public class MainApplicationFrame extends JFrame implements HasState {
      */
     private JMenuItem createExitItem() {
         JMenuItem exitItem = new JMenuItem(
-                "Выход", KeyEvent.VK_X | KeyEvent.VK_ALT);
+                LocalizationManager.getInstance().getLocalizedMessage("ExitMenu")
+                , KeyEvent.VK_X | KeyEvent.VK_ALT);
         exitItem.addActionListener((event) -> Toolkit.getDefaultToolkit()
                 .getSystemEventQueue()
                 .postEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING)));
@@ -150,9 +161,14 @@ public class MainApplicationFrame extends JFrame implements HasState {
      * Создаёт меню - "Тесты"
      */
     private JMenu createTestMenu() {
-        JMenu testMenu = new JMenu("Тесты");
+        JMenu testMenu = new JMenu(
+                LocalizationManager.getInstance().getLocalizedMessage("TestMenu")
+        );
         testMenu.setMnemonic(KeyEvent.VK_T);
-        testMenu.getAccessibleContext().setAccessibleDescription("Тестовые команды");
+        testMenu.getAccessibleContext().setAccessibleDescription(
+                LocalizationManager.getInstance()
+                        .getLocalizedMessage("TestMenuDescription")
+        );
 
         testMenu.add(createAddLogMessageItem());
         return testMenu;
@@ -161,7 +177,8 @@ public class MainApplicationFrame extends JFrame implements HasState {
 
     private JMenuItem createAddLogMessageItem() {
         JMenuItem addLogMessageItem = new JMenuItem(
-                "Сообщение в лог", KeyEvent.VK_S);
+                LocalizationManager.getInstance().getLocalizedMessage("LogMessageItem"),
+                KeyEvent.VK_S);
         addLogMessageItem.addActionListener((event) ->
                 Logger.debug("Новая строка"));
 
@@ -210,5 +227,10 @@ public class MainApplicationFrame extends JFrame implements HasState {
     @Override
     public String getWindowName() {
         return "main";
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        setJMenuBar(createMenuBar());
     }
 }
