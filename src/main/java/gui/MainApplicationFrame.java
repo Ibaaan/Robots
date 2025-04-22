@@ -1,7 +1,6 @@
 package gui;
 
 import game.GameModel;
-import i18n.LocalizationManager;
 import log.Logger;
 import state.HasState;
 import state.WindowStateManager;
@@ -170,17 +169,19 @@ public class MainApplicationFrame extends JFrame implements HasState, PropertyCh
                         .getLocalizedMessage("TestMenuDescription")
         );
 
-        testMenu.add(createAddLogMessageItem());
+        testMenu.add(createAddLogMessageItem("Новая строка"));
+        testMenu.add(createAddLogMessageItem("Другая строка"));
         return testMenu;
 
     }
 
-    private JMenuItem createAddLogMessageItem() {
+    private JMenuItem createAddLogMessageItem(String text) {
         JMenuItem addLogMessageItem = new JMenuItem(
                 LocalizationManager.getInstance().getLocalizedMessage("LogMessageItem"),
                 KeyEvent.VK_S);
+                text + " в лог", KeyEvent.VK_S);
         addLogMessageItem.addActionListener((event) ->
-                Logger.debug("Новая строка"));
+                Logger.debug(text));
 
         return addLogMessageItem;
     }
