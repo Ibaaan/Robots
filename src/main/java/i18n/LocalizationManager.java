@@ -15,8 +15,8 @@ public class LocalizationManager {
     public static final String LANGUAGE_UPDATED = "LANGUAGE_UPDATED";
     public static final String NAME = "lang";
 
-    private static LocalizationManager INSTANCE;
-    private final ConcurrentMap<Integer, MessageFormat> messageFormatCache;
+    private static volatile LocalizationManager INSTANCE;
+    private final ConcurrentMap<String, MessageFormat> messageFormatCache;
     private final PropertyChangeSupport propChangeDispatcher =
             new PropertyChangeSupport(this);
     private String language = "ru";
@@ -30,7 +30,11 @@ public class LocalizationManager {
      */
     public static LocalizationManager getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new LocalizationManager();
+            synchronized (LocalizationManager.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new LocalizationManager();
+                }
+            }
         }
         return INSTANCE;
     }
@@ -45,7 +49,7 @@ public class LocalizationManager {
                         Locale.of(language))
                 .getString(key);
         MessageFormat messageFormat = messageFormatCache.computeIfAbsent(
-                pattern.hashCode(),
+                pattern,
                 s -> new MessageFormat(pattern));
         return messageFormat.format(arguments);
     }
