@@ -50,7 +50,7 @@ public class LogList {
      */
     public synchronized List<LogEntry> subList(int fromIndex, int toIndex) {
         List<LogEntry> subList = new ArrayList<>();
-        Iterator<LogEntry> iterator = iterator();
+        Iterator<LogEntry> iterator = deque.iterator();
         for (int i = 0; i < toIndex; i++) {
             if (iterator.hasNext()) {
                 LogEntry logEntry = iterator.next();
