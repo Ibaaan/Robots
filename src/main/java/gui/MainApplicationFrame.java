@@ -211,7 +211,7 @@ public class MainApplicationFrame extends JFrame implements HasState, PropertyCh
     }
 
     private JMenuItem createLangItem(String langAcronym) {
-        String langName = LocalizationManager.getInstance().getLocalizedMessage("LangName", langAcronym);
+        String langName = LocalizationManager.getInstance().getMessage("LangName", langAcronym);
         JMenuItem langItem = new JMenuItem(
                 langName);
         langItem.addActionListener((event) ->

@@ -54,26 +54,27 @@ public class LocalizationManager {
         return messageFormat.format(arguments);
     }
 
+
     /**
-     * Возвращает локализованное сообщение для указанного ключа и языка
+     * Возвращает сообщение для указанного ключа, используя текущий язык и
+     * форматируя его с помощью предоставленных аргументов
      */
     public String getLocalizedMessage(String key, Object... arguments) {
         return getLocalizedMessage(key, language, arguments);
     }
 
     /**
-     * Возвращает локализованное сообщение для указанного ключа используя текущий язык,
-     * форматируя его с помощью предоставленных аргументов
+     * Возвращает локализованное сообщение для указанного ключа и языка
      */
-    public String getLocalizedMessage(String key, String language) {
-        return getLocalizedMessage(key, language, new Object[]{});
+    public String getMessage(String key, String language) {
+        return getLocalizedMessage(key, language);
     }
 
     /**
      * Возвращает локализованное сообщение для указанного ключа используя текущий язык
      */
     public String getLocalizedMessage(String key) {
-        return getLocalizedMessage(key, language, new Object[]{});
+        return getLocalizedMessage(key, language);
     }
 
     /**
