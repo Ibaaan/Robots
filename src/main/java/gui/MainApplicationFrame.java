@@ -1,6 +1,7 @@
 package gui;
 
 import game.GameModel;
+import l10n.LocalizationManager;
 import log.Logger;
 import state.HasState;
 import state.WindowStateManager;
@@ -10,15 +11,14 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
-public class MainApplicationFrame extends JFrame implements HasState {
+public class MainApplicationFrame extends JFrame implements HasState, PropertyChangeListener {
     private final JDesktopPane desktopPane = new JDesktopPane();
-    private final Locale locale;
     private final WindowStateManager windowStateManager;
     private final List<HasState> windows;
 
@@ -30,26 +30,25 @@ public class MainApplicationFrame extends JFrame implements HasState {
         setBounds(inset, inset, screenSize.width - inset * 2,
                 screenSize.height - inset * 2);
 
-        locale = Locale.forLanguageTag("ru-RU");
-
         addWindow(new GameWindow(model));
         addWindow(new LogWindow());
         addWindow(new CoordinatesWindow(model));
-
         setContentPane(desktopPane);
-        setJMenuBar(createMenuBar());
 
         windows = getSaveLoadStateWindows();
         windowStateManager.recoverWindows(windows);
+
+        setJMenuBar(createMenuBar());
 
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 onWindowClosingEvent(e);
-
             }
         });
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+
+        LocalizationManager.getInstance().addPropertyChangeListener(this);
     }
 
     /**
@@ -69,13 +68,13 @@ public class MainApplicationFrame extends JFrame implements HasState {
      * создание диалогового окна
      */
     private void onWindowClosingEvent(WindowEvent e) {
-        ResourceBundle rb = ResourceBundle.getBundle(
-                "localization/JOptionPane", locale);
-        Object[] options = {rb.getString("Yes"), rb.getString("No")};
+        LocalizationManager localizationManager = LocalizationManager.getInstance();
+        Object[] options = {localizationManager.getLocalizedMessage("Yes"),
+                localizationManager.getLocalizedMessage("No")};
         int option = JOptionPane.showOptionDialog(
                 e.getWindow(),
-                rb.getString("ExitConfirm"),
-                "Панельная выходка",
+                localizationManager.getLocalizedMessage("ExitConfirm"),
+                localizationManager.getLocalizedMessage("ExitTitle"),
                 JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null, options, options[0]);
@@ -96,10 +95,12 @@ public class MainApplicationFrame extends JFrame implements HasState {
      * Создаёт меню - 'Режим отображения'
      */
     private JMenu createLookAndFeelMenu() {
-        JMenu lookAndFeelMenu = new JMenu("Режим отображения");
+        JMenu lookAndFeelMenu = new JMenu(
+                LocalizationManager.getInstance().getLocalizedMessage("DisplayMode"));
         lookAndFeelMenu.setMnemonic(KeyEvent.VK_V);
         lookAndFeelMenu.getAccessibleContext().
-                setAccessibleDescription("Управление режимом отображения приложения");
+                setAccessibleDescription(LocalizationManager.getInstance()
+                        .getLocalizedMessage("DisplayModeDescription"));
 
         lookAndFeelMenu.add(createSystemLookAndFeelItem());
         lookAndFeelMenu.add(createCrossPlatformLookAndFeelItem());
@@ -109,7 +110,9 @@ public class MainApplicationFrame extends JFrame implements HasState {
 
     private JMenuItem createCrossPlatformLookAndFeelItem() {
         JMenuItem crossPlatformLookAndFeelItem = new JMenuItem(
-                "Универсальная схема", KeyEvent.VK_S);
+                LocalizationManager.getInstance()
+                        .getLocalizedMessage("CrossPlatformLookAndFeelItem"),
+                KeyEvent.VK_S);
         crossPlatformLookAndFeelItem.addActionListener((event) -> {
             setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
             this.invalidate();
@@ -119,7 +122,8 @@ public class MainApplicationFrame extends JFrame implements HasState {
 
     private JMenuItem createSystemLookAndFeelItem() {
         JMenuItem systemLookAndFeelItem = new JMenuItem(
-                "Системная схема", KeyEvent.VK_S);
+                LocalizationManager.getInstance().getLocalizedMessage("SystemLookAndFeelItem"),
+                KeyEvent.VK_S);
         systemLookAndFeelItem.addActionListener((event) -> {
             setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             this.invalidate();
@@ -131,7 +135,8 @@ public class MainApplicationFrame extends JFrame implements HasState {
      * Создаёт меню - "Выход"
      */
     private JMenu createExitMenu() {
-        JMenu exitMenu = new JMenu("Выход");
+        JMenu exitMenu = new JMenu(
+                LocalizationManager.getInstance().getLocalizedMessage("ExitMenu"));
         exitMenu.setMnemonic(KeyEvent.VK_A);
 
         exitMenu.add(createExitItem());
@@ -143,7 +148,8 @@ public class MainApplicationFrame extends JFrame implements HasState {
      */
     private JMenuItem createExitItem() {
         JMenuItem exitItem = new JMenuItem(
-                "Выход", KeyEvent.VK_X | KeyEvent.VK_ALT);
+                LocalizationManager.getInstance().getLocalizedMessage("ExitMenu")
+                , KeyEvent.VK_X | KeyEvent.VK_ALT);
         exitItem.addActionListener((event) -> Toolkit.getDefaultToolkit()
                 .getSystemEventQueue()
                 .postEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING)));
@@ -155,32 +161,63 @@ public class MainApplicationFrame extends JFrame implements HasState {
      * Создаёт меню - "Тесты"
      */
     private JMenu createTestMenu() {
-        JMenu testMenu = new JMenu("Тесты");
+        JMenu testMenu = new JMenu(
+                LocalizationManager.getInstance().getLocalizedMessage("TestMenu")
+        );
         testMenu.setMnemonic(KeyEvent.VK_T);
-        testMenu.getAccessibleContext().setAccessibleDescription("Тестовые команды");
+        testMenu.getAccessibleContext().setAccessibleDescription(
+                LocalizationManager.getInstance()
+                        .getLocalizedMessage("TestMenuDescription")
+        );
 
-        testMenu.add(createAddLogMessageItem("Новая строка"));
-        testMenu.add(createAddLogMessageItem("Другая строка"));
+        String testLogMessage1 = LocalizationManager.getInstance()
+                .getLocalizedMessage("TestLogMessage1");
+        String testLogMessage2 = LocalizationManager.getInstance()
+                .getLocalizedMessage("TestLogMessage2");
+
+
+        testMenu.add(createAddLogMessageItem(testLogMessage1));
+        testMenu.add(createAddLogMessageItem(testLogMessage2));
         return testMenu;
 
     }
 
-    private JMenuItem createAddLogMessageItem(String text) {
-        JMenuItem addLogMessageItem = new JMenuItem(
-                text + " в лог", KeyEvent.VK_S);
+    private JMenuItem createAddLogMessageItem(String logText) {
+        String addedText = LocalizationManager.getInstance()
+                .getLocalizedMessage("LogMessagePattern", (Object) logText);
+        JMenuItem addLogMessageItem = new JMenuItem(logText, KeyEvent.VK_S);
         addLogMessageItem.addActionListener((event) ->
-                Logger.debug(text));
+                Logger.debug(addedText));
 
         return addLogMessageItem;
     }
-
 
     private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(createExitMenu());
         menuBar.add(createLookAndFeelMenu());
         menuBar.add(createTestMenu());
+        menuBar.add(createLocalizationMenu());
         return menuBar;
+    }
+
+    private JMenu createLocalizationMenu() {
+        JMenu langChangeMenu = new JMenu(LocalizationManager.getInstance().getLocalizedMessage("LangChange"));
+
+
+        langChangeMenu.add(createLangItem("ru"));
+        langChangeMenu.add(createLangItem("en"));
+        return langChangeMenu;
+    }
+
+    private JMenuItem createLangItem(String langAcronym) {
+        String langName = LocalizationManager.getInstance().getMessage("LangName", langAcronym);
+        JMenuItem langItem = new JMenuItem(
+                langName);
+        langItem.addActionListener((event) ->
+                LocalizationManager.getInstance().changeLanguageTo(langAcronym));
+
+        return langItem;
     }
 
     private void setLookAndFeel(String className) {
@@ -197,5 +234,10 @@ public class MainApplicationFrame extends JFrame implements HasState {
     @Override
     public String getWindowName() {
         return "main";
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        setJMenuBar(createMenuBar());
     }
 }
