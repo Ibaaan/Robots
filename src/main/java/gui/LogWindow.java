@@ -1,6 +1,6 @@
 package gui;
 
-import i18n.LocalizationManager;
+import l10n.LocalizationManager;
 import log.LogChangeListener;
 import log.LogEntry;
 import log.Logger;

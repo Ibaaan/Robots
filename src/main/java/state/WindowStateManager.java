@@ -1,6 +1,6 @@
 package state;
 
-import i18n.LocalizationManager;
+import l10n.LocalizationManager;
 
 import javax.swing.*;
 import java.awt.*;

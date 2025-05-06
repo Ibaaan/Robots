@@ -1,4 +1,4 @@
-package i18n;
+package l10n;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
