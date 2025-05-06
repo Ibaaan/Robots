@@ -48,7 +48,7 @@ public class LogList {
      * @param toIndex   Конец диапазона(не включительно)
      * @return List содержащий логи c индексами в диапазоне
      */
-    public synchronized List<LogEntry> subList(int fromIndex, int toIndex) {
+    public List<LogEntry> subList(int fromIndex, int toIndex) {
         List<LogEntry> subList = new ArrayList<>();
         Iterator<LogEntry> iterator = iterator();
         for (int i = 0; i < toIndex; i++) {
