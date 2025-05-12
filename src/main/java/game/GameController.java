@@ -9,11 +9,12 @@ import java.util.TimerTask;
  */
 public class GameController {
     private final GameModel model;
+    private final Timer timer;
 
     public GameController(GameModel model) {
         this.model = model;
-        Timer m_timer = new Timer("events generator", true);
-        m_timer.schedule(new TimerTask() {
+        timer = new Timer("events generator", true);
+        timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 model.updateRobotPosition();
@@ -28,5 +29,12 @@ public class GameController {
      */
     public void updateTargetPosition(Point point) {
         model.setTargetPosition(point.x, point.y);
+    }
+
+    /**
+     * Останавливает работу таймера
+     */
+    public void stop() {
+        timer.cancel();
     }
 }

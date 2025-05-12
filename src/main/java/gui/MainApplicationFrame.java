@@ -241,11 +241,10 @@ public class MainApplicationFrame extends JFrame implements HasState, PropertyCh
         windowStateManager.saveWindows(getSaveLoadStateWindows());
 
         for (Component component : getContentPane().getComponents()) {
-            if ((component instanceof HasState hasState) &&
-                    (hasState.getWindowName().equals("game") ||
-                            hasState.getWindowName().equals("coordinates"))
-            ) {
+            if (component instanceof GameWindow ||
+                    component instanceof CoordinatesWindow) {
                 remove(component);
+                ((JInternalFrame) component).dispose();
             }
         }
 
