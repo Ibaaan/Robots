@@ -3,17 +3,21 @@ package gui;
 import game.GameController;
 import game.GameModel;
 import game.GameVisualizer;
+import l10n.LocalizationManager;
 import state.HasState;
 
 import javax.swing.*;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
-public class GameWindow extends JInternalFrame implements HasState {
+public class GameWindow extends JInternalFrame implements HasState, PropertyChangeListener {
     private static final Integer DEFAULT_WIDTH = 400;
     private static final Integer DEFAULT_HEIGHT = 400;
 
     public GameWindow(GameModel model) {
-        super("Игровое поле", true, true, true, true);
+        super(LocalizationManager.getInstance().getLocalizedMessage("GameWindowTitle"),
+                true, true, true, true);
 
         GameController controller = new GameController(model);
         GameVisualizer m_visualizer = new GameVisualizer(model, controller);
@@ -24,10 +28,17 @@ public class GameWindow extends JInternalFrame implements HasState {
 
         setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
         setDefaultCloseOperation(HIDE_ON_CLOSE);
+
+        LocalizationManager.getInstance().addPropertyChangeListener(this);
     }
 
     @Override
     public String getWindowName() {
         return "game";
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        setTitle(LocalizationManager.getInstance().getLocalizedMessage("GameWindowTitle"));
     }
 }

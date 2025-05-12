@@ -25,17 +25,11 @@ public class FileStateManager {
     /**
      * Возвращает Map со всеми параметрами окна, хранящихся в файле
      */
-    public Map<String, Integer> getAllProperties() {
-        Map<String, Integer> result = new HashMap<>();
+    public Map<String, String> getAllProperties() {
+        Map<String, String> result = new HashMap<>();
         Properties properties = readConfig();
         for (String key : properties.stringPropertyNames()) {
-            try {
-                result.put(key,
-                        Integer.parseInt((String) properties.get(key)));
-            } catch (NumberFormatException e) {
-                LOGGER.log(Level.WARNING, "Значение по ключу " + key +
-                        " не является числом", e);
-            }
+            result.put(key, properties.get(key).toString());
         }
         return result;
     }
@@ -43,7 +37,7 @@ public class FileStateManager {
     /**
      * Сохраняет параметры из Map в state.cfg в домашнем каталоге пользователя
      */
-    public void save(Map<String, Integer> properties) {
+    public void save(Map<String, String> properties) {
         File folder = new File(folderPath);
         File file = new File(filePath);
 
@@ -62,7 +56,8 @@ public class FileStateManager {
         }
 
         Properties savedProps = new Properties();
-        properties.forEach((key, value) -> savedProps.setProperty(key, value.toString()));
+        properties.forEach(savedProps::setProperty);
+
 
         try (FileWriter fileWriter = new FileWriter(filePath)) {
             savedProps.store(fileWriter, "Window State Properties");

@@ -11,10 +11,6 @@ import java.util.Set;
 public class WindowPropertyMap extends AbstractMap<String, Integer> {
     private final Map<String, Integer> properties;
 
-    public WindowPropertyMap(Map<String, Integer> map) {
-        this.properties = new HashMap<>(map);
-    }
-
     public WindowPropertyMap() {
         this.properties = new HashMap<>();
     }
@@ -41,6 +37,17 @@ public class WindowPropertyMap extends AbstractMap<String, Integer> {
         for (Map.Entry<String, Integer> entry : map.entrySet()) {
             properties.put(prefix + "." + entry.getKey(), entry.getValue());
         }
+    }
+
+    /**
+     * @return Map со значениями преобразованными в String
+     */
+    public Map<String, String> convertValuesToString() {
+        Map<String, String> result = new HashMap<>();
+        for (String key : properties.keySet()) {
+            result.put(key, String.valueOf(properties.get(key)));
+        }
+        return result;
     }
 
     @Override
