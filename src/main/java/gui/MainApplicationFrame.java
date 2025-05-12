@@ -225,7 +225,7 @@ public class MainApplicationFrame extends JFrame implements HasState, PropertyCh
         RobotModel robotModel;
 
         if (isLoadingRobot) {
-            robotModel = RobotLoader.getNewRobotOrDefault(new RobotImpl());
+            robotModel = RobotLoader.getNewRobotOrDefault(new RobotImpl(), this);
         } else {
             robotModel = new RobotImpl();
         }
