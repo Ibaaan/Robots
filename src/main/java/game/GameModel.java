@@ -10,11 +10,11 @@ public class GameModel {
     public static final String ROBOT_POSITION_UPDATED = "ROBOT_POSITION_UPDATED";
     public static final String TARGET_POSITION_UPDATED = "TARGET_POSITION_UPDATED";
 
+
     private final PropertyChangeSupport propChangeDispatcher =
             new PropertyChangeSupport(this);
 
     private final RobotModel robot;
-
 
     /**
      * Создает игровую модель с заданной моделью робота

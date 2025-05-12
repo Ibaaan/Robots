@@ -1,10 +1,13 @@
 package gui;
 
 import game.GameModel;
+import game.RobotImpl;
+import game.RobotModel;
 import l10n.LocalizationManager;
 import log.Logger;
 import state.HasState;
 import state.WindowStateManager;
+import util.RobotLoader;
 
 import javax.swing.*;
 import java.awt.*;
@@ -198,12 +201,62 @@ public class MainApplicationFrame extends JFrame implements HasState, PropertyCh
         menuBar.add(createLookAndFeelMenu());
         menuBar.add(createTestMenu());
         menuBar.add(createLocalizationMenu());
+        menuBar.add(createRobotChangerMenu());
         return menuBar;
+    }
+
+    private JMenu createRobotChangerMenu() {
+        JMenu robotChangeMenu = new JMenu(LocalizationManager.getInstance().getLocalizedMessage("RobotChangeMenu"));
+
+        robotChangeMenu.add(createRobotSetter("DefaultRobot", false));
+        robotChangeMenu.add(createRobotSetter("NewRobot", true));
+        return robotChangeMenu;
+    }
+
+    private JMenuItem createRobotSetter(String keyForOptionName, boolean isLoadingRobot) {
+        String menuItemName = LocalizationManager.getInstance().getLocalizedMessage(keyForOptionName);
+        JMenuItem robotItem = new JMenuItem(menuItemName);
+
+        robotItem.addActionListener((e -> changeRobot(isLoadingRobot)));
+        return robotItem;
+    }
+
+    private void changeRobot(boolean isLoadingRobot) {
+        RobotModel robotModel;
+
+        if (isLoadingRobot) {
+            robotModel = RobotLoader.getNewRobotOrDefault(new RobotImpl());
+        } else {
+            robotModel = new RobotImpl();
+        }
+
+        updateModelUsingWindows(robotModel);
+    }
+
+    /**
+     * Пересоздает окна использующих модель с новым роботом
+     */
+    private void updateModelUsingWindows(RobotModel robotModel) {
+        GameModel model = new GameModel(robotModel);
+        windowStateManager.saveWindows(getSaveLoadStateWindows());
+
+        for (Component component : getContentPane().getComponents()) {
+            if ((component instanceof HasState hasState) &&
+                    (hasState.getWindowName().equals("game") ||
+                            hasState.getWindowName().equals("coordinates"))
+            ) {
+                remove(component);
+            }
+        }
+
+        addWindow(new GameWindow(model));
+        addWindow(new CoordinatesWindow(model));
+
+        windowStateManager.recoverWindows(getSaveLoadStateWindows());
     }
 
     private JMenu createLocalizationMenu() {
         JMenu langChangeMenu = new JMenu(LocalizationManager.getInstance().getLocalizedMessage("LangChange"));
-
 
         langChangeMenu.add(createLangItem("ru"));
         langChangeMenu.add(createLangItem("en"));
