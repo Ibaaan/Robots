@@ -42,7 +42,7 @@ public class RobotLoader {
                     return (RobotModel) clazz.getDeclaredConstructor().newInstance();
                 } else {
                     LOGGER.log(Level.WARNING, "Загруженный класс не реализует " +
-                            RobotModel.class);
+                            RobotModel.class.getName());
                 }
             }
         } catch (ReflectiveOperationException e) {
