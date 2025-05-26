@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,12 +26,13 @@ public class RobotLoader {
      */
     public static RobotModel getNewRobotOrDefault(RobotImpl defaultRobot, Component parent) {
         try {
-            File jarFile = chooseFileToLoad(parent);
+            Optional<File> optionalJarFile = chooseFileToLoad(parent);
 
-            if (jarFile.getPath().isEmpty()) {
+            if (optionalJarFile.isEmpty()) {
                 return defaultRobot;
             }
 
+            File jarFile = optionalJarFile.get();
             URL jarUrl = jarFile.toURI().toURL();
 
             try (URLClassLoader classLoader = new URLClassLoader(new URL[]{jarUrl})) {
@@ -58,16 +60,16 @@ public class RobotLoader {
     /**
      * Создает окно с выбором пути до файла и возвращает этот путь
      */
-    private static File chooseFileToLoad(Component parent) {
+    private static Optional<File> chooseFileToLoad(Component parent) {
         JFileChooser fileChooser = new JFileChooser();
 
         int returnValue = fileChooser.showOpenDialog(parent);
-        File selectedFile = new File("");
 
         if (returnValue == JFileChooser.APPROVE_OPTION) {
-            selectedFile = fileChooser.getSelectedFile();
+            File selectedFile = fileChooser.getSelectedFile();
+            return Optional.ofNullable(selectedFile);
+        } else {
+            return Optional.empty();
         }
-
-        return selectedFile;
     }
 }
