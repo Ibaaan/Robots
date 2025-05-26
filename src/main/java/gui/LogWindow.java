@@ -1,9 +1,9 @@
 package gui;
 
 import l10n.LocalizationManager;
+import log.GUILogger;
 import log.LogChangeListener;
 import log.LogEntry;
-import log.Logger;
 import state.HasState;
 
 import javax.swing.*;
@@ -22,14 +22,14 @@ public class LogWindow extends JInternalFrame
     public LogWindow() {
         super(LocalizationManager.getInstance().getLocalizedMessage("LogWindowTitle"),
                 true, true, true, true);
-        Logger.getDefaultLogSource().registerListener(this);
+        GUILogger.getDefaultLogSource().registerListener(this);
         m_logContent = new TextArea("");
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(m_logContent, BorderLayout.CENTER);
         getContentPane().add(panel);
         updateLogContent();
-        Logger.debug(LocalizationManager.getInstance()
+        GUILogger.debug(LocalizationManager.getInstance()
                 .getLocalizedMessage("LogWindowActivated"));
         setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
         setLocation(DEFAULT_X, DEFAULT_Y);
@@ -40,7 +40,7 @@ public class LogWindow extends JInternalFrame
 
     private void updateLogContent() {
         StringBuilder content = new StringBuilder();
-        for (LogEntry entry : Logger.getDefaultLogSource().all()) {
+        for (LogEntry entry : GUILogger.getDefaultLogSource().all()) {
             content.append(entry.getMessage()).append("\n");
         }
         m_logContent.setText(content.toString());

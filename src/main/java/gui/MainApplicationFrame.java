@@ -1,10 +1,13 @@
 package gui;
 
 import game.GameModel;
+import game.RobotImpl;
+import game.RobotModel;
 import l10n.LocalizationManager;
-import log.Logger;
+import log.GUILogger;
 import state.HasState;
 import state.WindowStateManager;
+import util.RobotLoader;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,10 +24,11 @@ public class MainApplicationFrame extends JFrame implements HasState, PropertyCh
     private final JDesktopPane desktopPane = new JDesktopPane();
     private final WindowStateManager windowStateManager;
     private final List<HasState> windows;
+    private final GameModel model;
 
     public MainApplicationFrame() {
         windowStateManager = new WindowStateManager();
-        GameModel model = new GameModel();
+        model = new GameModel();
         int inset = 50;
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setBounds(inset, inset, screenSize.width - inset * 2,
@@ -187,7 +191,7 @@ public class MainApplicationFrame extends JFrame implements HasState, PropertyCh
                 .getLocalizedMessage("LogMessagePattern", (Object) logText);
         JMenuItem addLogMessageItem = new JMenuItem(logText, KeyEvent.VK_S);
         addLogMessageItem.addActionListener((event) ->
-                Logger.debug(addedText));
+                GUILogger.debug(addedText));
 
         return addLogMessageItem;
     }
@@ -198,12 +202,54 @@ public class MainApplicationFrame extends JFrame implements HasState, PropertyCh
         menuBar.add(createLookAndFeelMenu());
         menuBar.add(createTestMenu());
         menuBar.add(createLocalizationMenu());
+        menuBar.add(createRobotChangerMenu());
         return menuBar;
+    }
+
+    /**
+     * Создает меню с выбором робота
+     */
+    private JMenu createRobotChangerMenu() {
+        JMenu robotChangeMenu = new JMenu(LocalizationManager.getInstance().getLocalizedMessage("RobotChangeMenu"));
+
+        robotChangeMenu.add(createRobotSetter("DefaultRobot", false));
+        robotChangeMenu.add(createRobotSetter("NewRobot", true));
+        return robotChangeMenu;
+    }
+
+    /**
+     * Создает и возвращает кнопку для загрузки робота
+     * @param keyForOptionName Название кнопки
+     * @param isLoadingRobot true - если загружаем робота извне,
+     *                       false - дефолтные робот
+     */
+    private JMenuItem createRobotSetter(String keyForOptionName, boolean isLoadingRobot) {
+        String menuItemName = LocalizationManager.getInstance().getLocalizedMessage(keyForOptionName);
+        JMenuItem robotItem = new JMenuItem(menuItemName);
+
+        robotItem.addActionListener((e -> changeRobot(isLoadingRobot)));
+        return robotItem;
+    }
+
+    /**
+     * Заменяет робота
+     * @param isLoadingRobot true - если загружаем робота извне,
+     *                       false - дефолтные робот
+     */
+    private void changeRobot(boolean isLoadingRobot) {
+        RobotModel robotModel;
+
+        if (isLoadingRobot) {
+            robotModel = RobotLoader.getNewRobotOrDefault(new RobotImpl(), this);
+        } else {
+            robotModel = new RobotImpl();
+        }
+
+        model.setRobotModel(robotModel);
     }
 
     private JMenu createLocalizationMenu() {
         JMenu langChangeMenu = new JMenu(LocalizationManager.getInstance().getLocalizedMessage("LangChange"));
-
 
         langChangeMenu.add(createLangItem("ru"));
         langChangeMenu.add(createLangItem("en"));

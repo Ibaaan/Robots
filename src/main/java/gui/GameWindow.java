@@ -14,12 +14,13 @@ import java.beans.PropertyChangeListener;
 public class GameWindow extends JInternalFrame implements HasState, PropertyChangeListener {
     private static final Integer DEFAULT_WIDTH = 400;
     private static final Integer DEFAULT_HEIGHT = 400;
+    private final GameController controller;
 
     public GameWindow(GameModel model) {
         super(LocalizationManager.getInstance().getLocalizedMessage("GameWindowTitle"),
                 true, true, true, true);
 
-        GameController controller = new GameController(model);
+        controller = new GameController(model);
         GameVisualizer m_visualizer = new GameVisualizer(model, controller);
 
         JPanel panel = new JPanel(new BorderLayout());
@@ -30,6 +31,12 @@ public class GameWindow extends JInternalFrame implements HasState, PropertyChan
         setDefaultCloseOperation(HIDE_ON_CLOSE);
 
         LocalizationManager.getInstance().addPropertyChangeListener(this);
+    }
+
+    @Override
+    public void dispose() {
+        controller.stop();
+        super.dispose();
     }
 
     @Override

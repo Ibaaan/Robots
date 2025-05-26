@@ -1,13 +1,13 @@
 package log;
 
-public final class Logger
+public final class GUILogger
 {
     private static final LogWindowSource defaultLogSource;
     static {
         defaultLogSource = new LogWindowSource(5);
     }
-    
-    private Logger()
+
+    private GUILogger()
     {
     }
 
