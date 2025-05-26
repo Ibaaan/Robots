@@ -14,7 +14,7 @@ public class GameModel {
     private final PropertyChangeSupport propChangeDispatcher =
             new PropertyChangeSupport(this);
 
-    private final RobotModel robot;
+    private RobotModel robot;
 
     /**
      * Создает игровую модель с заданной моделью робота
@@ -65,5 +65,9 @@ public class GameModel {
 
     public void addTextChangeListener(PropertyChangeListener listener) {
         propChangeDispatcher.addPropertyChangeListener(ROBOT_POSITION_UPDATED, listener);
+    }
+
+    public void setRobotModel(RobotModel robotModel) {
+        this.robot = robotModel;
     }
 }

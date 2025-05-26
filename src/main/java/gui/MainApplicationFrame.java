@@ -24,10 +24,11 @@ public class MainApplicationFrame extends JFrame implements HasState, PropertyCh
     private final JDesktopPane desktopPane = new JDesktopPane();
     private final WindowStateManager windowStateManager;
     private final List<HasState> windows;
+    private GameModel model;
 
     public MainApplicationFrame() {
         windowStateManager = new WindowStateManager();
-        GameModel model = new GameModel();
+        model = new GameModel();
         int inset = 50;
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setBounds(inset, inset, screenSize.width - inset * 2,
@@ -205,6 +206,9 @@ public class MainApplicationFrame extends JFrame implements HasState, PropertyCh
         return menuBar;
     }
 
+    /**
+     * Создает меню с выбором робота
+     */
     private JMenu createRobotChangerMenu() {
         JMenu robotChangeMenu = new JMenu(LocalizationManager.getInstance().getLocalizedMessage("RobotChangeMenu"));
 
@@ -213,6 +217,12 @@ public class MainApplicationFrame extends JFrame implements HasState, PropertyCh
         return robotChangeMenu;
     }
 
+    /**
+     * Создает и возвращает кнопку для загрузки робота
+     * @param keyForOptionName Название кнопки
+     * @param isLoadingRobot true - если загружаем робота извне,
+     *                       false - дефолтные робот
+     */
     private JMenuItem createRobotSetter(String keyForOptionName, boolean isLoadingRobot) {
         String menuItemName = LocalizationManager.getInstance().getLocalizedMessage(keyForOptionName);
         JMenuItem robotItem = new JMenuItem(menuItemName);
@@ -221,6 +231,11 @@ public class MainApplicationFrame extends JFrame implements HasState, PropertyCh
         return robotItem;
     }
 
+    /**
+     * Заменяет робота
+     * @param isLoadingRobot true - если загружаем робота извне,
+     *                       false - дефолтные робот
+     */
     private void changeRobot(boolean isLoadingRobot) {
         RobotModel robotModel;
 
@@ -230,28 +245,7 @@ public class MainApplicationFrame extends JFrame implements HasState, PropertyCh
             robotModel = new RobotImpl();
         }
 
-        updateModelUsingWindows(robotModel);
-    }
-
-    /**
-     * Пересоздает окна использующих модель с новым роботом
-     */
-    private void updateModelUsingWindows(RobotModel robotModel) {
-        GameModel model = new GameModel(robotModel);
-        windowStateManager.saveWindows(getSaveLoadStateWindows());
-
-        for (Component component : getContentPane().getComponents()) {
-            if (component instanceof GameWindow ||
-                    component instanceof CoordinatesWindow) {
-                remove(component);
-                ((JInternalFrame) component).dispose();
-            }
-        }
-
-        addWindow(new GameWindow(model));
-        addWindow(new CoordinatesWindow(model));
-
-        windowStateManager.recoverWindows(getSaveLoadStateWindows());
+        model.setRobotModel(robotModel);
     }
 
     private JMenu createLocalizationMenu() {
