@@ -17,13 +17,6 @@ public class GameModel {
     private RobotModel robot;
 
     /**
-     * Создает игровую модель с заданной моделью робота
-     */
-    public GameModel(RobotModel robot) {
-        this.robot = robot;
-    }
-
-    /**
      * Создает игровую модель с реализацией робота по умолчанию
      */
     public GameModel() {

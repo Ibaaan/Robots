@@ -24,7 +24,7 @@ public class MainApplicationFrame extends JFrame implements HasState, PropertyCh
     private final JDesktopPane desktopPane = new JDesktopPane();
     private final WindowStateManager windowStateManager;
     private final List<HasState> windows;
-    private GameModel model;
+    private final GameModel model;
 
     public MainApplicationFrame() {
         windowStateManager = new WindowStateManager();
