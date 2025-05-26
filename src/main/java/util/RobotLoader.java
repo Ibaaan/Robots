@@ -3,7 +3,7 @@ package util;
 import game.RobotImpl;
 import game.RobotModel;
 import l10n.LocalizationManager;
-import log.Logger;
+import log.GUILogger;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,13 +12,13 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Загружает робота из jar архива
  */
 public class RobotLoader {
-    private static final java.util.logging.Logger LOGGER =
-            java.util.logging.Logger.getLogger(RobotLoader.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RobotLoader.class.getName());
 
     /**
      * Загружает робота извне, если не получилось возвращает {@code defaultRobot}
@@ -38,7 +38,7 @@ public class RobotLoader {
 
                 if (RobotModel.class.isAssignableFrom(clazz)) {
                     LOGGER.log(Level.INFO, "Архив был успешно загружен");
-                    Logger.debug(LocalizationManager.getInstance().getLocalizedMessage("ClassLoad"));
+                    GUILogger.debug(LocalizationManager.getInstance().getLocalizedMessage("ClassLoad"));
                     return (RobotModel) clazz.getDeclaredConstructor().newInstance();
                 } else {
                     LOGGER.log(Level.WARNING, "Загруженный класс не реализует " +
@@ -46,7 +46,7 @@ public class RobotLoader {
                 }
             }
         } catch (ReflectiveOperationException e) {
-            Logger.error(LocalizationManager.getInstance().getLocalizedMessage("ReflectError"));
+            GUILogger.error(LocalizationManager.getInstance().getLocalizedMessage("ReflectError"));
             LOGGER.log(Level.WARNING, "Не удалось загрузить класс извне", e);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Неудачная или прерванная операция ввода-вывода.", e);

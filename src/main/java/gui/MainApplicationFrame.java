@@ -4,7 +4,7 @@ import game.GameModel;
 import game.RobotImpl;
 import game.RobotModel;
 import l10n.LocalizationManager;
-import log.Logger;
+import log.GUILogger;
 import state.HasState;
 import state.WindowStateManager;
 import util.RobotLoader;
@@ -191,7 +191,7 @@ public class MainApplicationFrame extends JFrame implements HasState, PropertyCh
                 .getLocalizedMessage("LogMessagePattern", (Object) logText);
         JMenuItem addLogMessageItem = new JMenuItem(logText, KeyEvent.VK_S);
         addLogMessageItem.addActionListener((event) ->
-                Logger.debug(addedText));
+                GUILogger.debug(addedText));
 
         return addLogMessageItem;
     }
